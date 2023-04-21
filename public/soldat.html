@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soldat</title>
+
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+
+</head>
+
+<body>
+
+
+    <button id="enemyshootbutton">Enemyshoot</button>
+
+
+
+    <script>
+        let cursors;
+        let player;
+        let bullets;
+        let enemy;
+        
+        let enemybullets;
+
+        let platforms;
+        let config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 1000 },
+                    debug: false
+
+                }
+            },
+            scene: {
+                create: create,
+                preload: preload,
+                update: update
+            }
+        }
+
+
+        let game = new Phaser.Game(config);
+
+
+        function preload() {
+            this.load.image('sky', 'assets/sky.png');
+            this.load.image('bullet', 'assets/bullet.png');
+            this.load.image('platform', 'assets/platform.png');
+
+
+            this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+
+        }
+
+
+        function create() {
+            this.add.image(400, 300, 'sky');
+            platforms = this.physics.add.staticGroup();
+            platforms.create(300, 300, 'platform');
+
+
+            bullets = this.physics.add.group();
+            enemybullets = this.physics.add.group();
+
+
+
+            createAnimations(this);
+
+            player = this.physics.add.sprite(100, 100, 'dude');
+            player.setCollideWorldBounds(true);
+            player.life = 100;
+
+            enemy = this.physics.add.sprite(500, 10, 'dude');
+            enemy.setTint(0xff0000);
+            enemy.setCollideWorldBounds(true);
+
+            enemy.body.setBounce(0.2);
+            enemy.life = 100;
+            enemy.active = true;
+
+            let collider = this.physics.add.collider(bullets, enemy, attack, null, this);
+            let collider2 = this.physics.add.collider(enemybullets, player, enemyattack, null, this);
+
+            collider.bounce = 0;
+
+            this.physics.add.collider(player, platforms);
+            this.physics.add.collider(enemy, platforms);
+             this.physics.world.setBounds(0, 0, 800, 600);
+
+            cursors = this.input.keyboard.createCursorKeys();
+
+
+            // this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
+            // this.keySpace.on('down', function () {
+            //     console.log('fsdaddsf');
+            //     shoot(this);
+            // }, this);
+
+            //  this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+            this.input.keyboard.addListener('keydown_SPACE', function (event) {
+                console.log('fsdaddsf');
+                shoot(this);
+            }, this);
+
+            this.input.keyboard.addListener('keydown_E', function (event) {
+                console.log('fsdaddsf');
+                enemyShoot(this);
+            }, this);
+
+            var timedEvent = this.time.addEvent({
+                delay: 900,
+                callback: enemyShoot,
+                callbackScope: this,
+                loop: true
+            });
+
+               var timedEvent2 = this.time.addEvent({
+                delay: 2000,
+                callback: enemyJump,
+                callbackScope: this,
+                loop: true
+            });
+
+
+
+
+
+          
+
+        }
+
+        function update() {
+
+
+            var keyboard = this.input.keyboard;
+
+
+            // if (this.keySpace.isDown) {
+            //     console.log('fsdaddsf');
+            //     shoot(this);
+            // }
+
+            if (cursors.up.isDown) {
+                jump();
+            } else if (cursors.left.isDown) {
+                goLeft();
+            } else if (cursors.right.isDown) {
+                goRight()
+            } else {
+                stand();
+            }
+
+            if (keyboard.addKey('A').isDown) {
+                enemy.setVelocityX(-160);
+                enemy.anims.play('left', true);
+            }
+            else if (keyboard.addKey('D').isDown) {
+                enemy.setVelocityX(160);
+                enemy.anims.play('right', true);
+            }
+            else {
+                enemy.setVelocityX(0);
+                enemy.anims.play('turn');
+            }
+
+            if(keyboard.addKey('W').isDown){
+                enemy.setVelocityY(-300);
+            }
+
+        }
+
+
+
+        function jump() {
+            player.setVelocityY(-300);
+        }
+
+        function goLeft() {
+            player.setVelocityX(-300);
+            player.anims.play('left', true);
+        }
+
+        function goRight() {
+            player.setVelocityX(150);
+            player.anims.play('right', true);
+        }
+
+        function stand() {
+            player.setVelocityX(0);
+            player.anims.play('turn', true);
+        }
+
+
+        function shoot(gameinstance) {
+            console.log('fsafsfds');
+            // gameinstance.physics.add.sprite(100, 100, 'bullet');
+
+            let bullet = bullets.create(player.x, player.y, 'bullet');
+            bullet.body.setAllowGravity(false);
+            bullet.body.setBounce(0);
+            bullet.setScale(0.15);
+
+            if (player.body.velocity.x >= 0) {
+                bullet.setVelocityX(1000);
+            } else {
+                bullet.setVelocityX(-1000);
+            }
+
+            // gameinstance.add.image(400, 300, 'bullet');
+
+        }
+
+
+        
+
+        function enemyShoot(gameinstance) {
+            if(enemy.active){
+            let bullet = enemybullets.create(enemy.x, enemy.y, 'bullet');
+            bullet.body.setAllowGravity(false);
+            bullet.body.setBounce(0);
+            bullet.setScale(0.15);
+
+            bullet.setVelocityX(-1000);
+            }
+        }
+
+        function attack(enemy, bullet) {
+            enemy.setTint(0xffff00);
+            bullet.setVelocityX(0);
+            bullet.body.setVelocity(0, 0);
+            enemy.body.setVelocity(0, 0);
+            enemy.life -= 10;
+
+            bullet.destroy();
+
+            if (enemy.life <= 0) {
+                enemy.setVisible(false);
+                enemy.x = 2000;
+                enemy.y= 1000;
+                enemy.active = false;
+            }
+
+        }
+
+
+        function enemyattack(player, bullet) {
+            player.setTint(0xffff00);
+            bullet.setVelocityX(0);
+            bullet.body.setVelocity(0, 0);
+            player.body.setVelocity(0, 0);
+            bullet.destroy();
+
+            player.life -= 10;
+
+            if (player.life <= 0) {
+                player.setVisible(false);
+                player.x = 1000;
+                player.y = 1000;
+            }
+
+        }
+
+        function enemyJump(){
+            if(enemy.active){
+                enemy.setVelocityY(-300);
+            }
+        }
+
+
+        function createAnimations(gameinstance) {
+            gameinstance.anims.create({
+                key: 'turn',
+                frames: [{ key: 'dude', frame: 4 }],
+                frameRate: 20
+            });
+
+            gameinstance.anims.create({
+                key: 'right',
+                frames: gameinstance.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+                frameRate: 10,
+                repeat: -1
+            });
+
+            gameinstance.anims.create({
+                key: 'left',
+                frames: gameinstance.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+                frameRate: 10,
+                repeat: -1
+            });
+
+        }
+
+            function updateCounter(){
+                console.log('counter');
+            }
+
+                // game.time.events.loop(Phaser.Timer.SECOND * 2, enemyShoot, this);
+
+
+
+
+    </script>
+
+</body>
+
+</html>

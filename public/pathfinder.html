@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathfinder</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <script src="followplugin.js"></script>
+
+</head>
+<body>
+
+
+<script>
+
+
+         var config = {
+                type: Phaser.AUTO,
+                width: 800,
+                height: 600,
+                physics: {
+                    default: 'arcade',
+                    arcade: {
+                        gravity: false,
+                        debug: false
+                    }
+                },
+                scene: {
+                    preload: preload,
+                    create: create,
+                    update: update
+                }
+            };
+
+        var game = new Phaser.Game(config);
+
+
+  
+        function preload(){
+
+             this.load.plugin('rexpathfollowerplugin', rexpathfollowerplugin, true);
+
+        }
+
+        function create(){
+
+                  console.log(game.plugins);
+
+
+            // var finder = game.plugins.get('rexPathFinder').add(layer, {
+            //     'collides': [0],
+            //     'diagonal': true,
+            //     'cache': true
+            // });
+
+            // var path = finder.findPath(startX, startY, endX, endY);
+
+            // if (path === null) {
+            //     console.warn("Path not found");
+            // } else {
+
+            //     console.log(path);
+            //     // Move your game object along the path
+            //     // ...
+            // }
+
+
+        }
+
+        function update(){
+
+        }
+
+
+
+</script>
+    
+</body>
+</html>

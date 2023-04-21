@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age of war</title>
+    <link rel="icon" href="data:;base64,=">
+
+
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+
+</head>
+
+<body>
+
+    <button id="adddudebutton">Add dude</button>
+
+
+
+
+
+    <script>
+
+        
+
+        let config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 300 },
+                    debug: false
+                },
+            },
+            scene: {
+
+                preload: preload,
+                create: create,
+                update: update
+
+            }
+        }
+
+        let dudes;
+        let dudesenemy;
+        let game = new Phaser.Game(config);
+        let baselife = 100;
+        let baselifetext;
+        let gold = 100;
+        let goldtext;
+
+
+
+        function preload() {
+            this.load.image('sky', 'assets/sky.png')
+            this.load.image('bullet', 'assets/bullet.png');
+            this.load.image('base1', 'assets/base1.png');
+            this.load.image('base2', 'assets/base2.png');
+
+
+
+            this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+
+        }
+
+
+        function create() {
+            let self = this;
+
+            createAnimations(self);
+            this.physics.world.setBounds(0, 0, 800, 600);
+
+            this.add.image(400, 300, 'sky');
+            baselifetext = this.add.text(10,10,'Base life:',{fill:'#00ff00'})
+            goldtext = this.add.text(10, 30, 'Gold:', { fill: '#ffff00' })
+
+
+            let base1 = this.physics.add.sprite(80, 300, 'base1');
+            let base2 = this.physics.add.sprite(700, 300, 'base2');
+            base1.setCollideWorldBounds(true);
+            base2.setCollideWorldBounds(true);
+
+
+
+
+            // base1.body.setAllowGravity(false);
+            // base2.setAllowGravity(false);
+
+
+            dudes = this.physics.add.group();
+            dudesenemy = this.physics.add.group();
+
+            this.physics.add.collider(dudesenemy, base1, attackbase, null, this);
+            // this.physics.add.collider(dudesenemy, base2);
+
+            this.physics.add.collider(dudes, base2);
+            // this.physics.add.collider(dudes, base1);
+
+            this.physics.add.collider(dudes, dudesenemy,attackdude,null,this);
+
+            addDude();
+            addDudeEnemy();
+            this.time.addEvent({
+                delay: 10000,
+                loop: true,
+                callback: function () {
+                    addDudeEnemy();
+                }
+            })
+
+
+            document.querySelector('#adddudebutton').addEventListener('click', function(){
+                addDude()
+            })
+            
+        }
+
+        function attackbase() {
+            baselife -= 0.05;
+            // baselifetext.setText('Base life:'+baselife);
+
+            console.log(baselife)
+
+        }
+
+        function attackdude(dude,enemy){
+
+            dude.x -=10;
+            enemy.x += 10;
+
+            dude.life -=10;
+            enemy.life -=10;
+
+            dude.setVelocityX(50);
+            enemy.setVelocityX(-50);
+
+            console.log(dude.life);
+
+            console.log(dude,enemy);
+
+            if(dude.life < 0){
+                dude.destroy();
+            }
+
+              if (enemy.life < 0) {
+                enemy.destroy();
+            }
+
+        }
+
+
+        function update() {
+            let self = this;
+
+
+            baselifetext.setText('Base life:'+baselife);
+            goldtext.setText('Gold:' + gold);
+
+
+            dudesenemy.getChildren().forEach(function(dude){
+
+                // console.log(dude);
+
+                if(dude.x < 202){
+                    // self.baselifetext.setText(dude.x);
+                    dude.x = 210;
+                }
+
+                if(dude.x < 205){
+                    attackbase();
+                }
+
+
+            })
+        }
+
+
+        function addDude() {
+            if(gold >= 20){
+                let dude = dudes.create(190, 550, 'dude');
+                dude.setCollideWorldBounds(true);
+                dude.setVelocityX(50);
+                dude.anims.play('right', true);
+
+                dude.setInteractive();
+                dude.on('pointerdown', function () {
+                    dude.destroy();
+                })
+
+                dude.life = 100;
+
+                gold -= 20;
+            }
+        }
+
+        function addDudeEnemy() {
+            let dude = dudesenemy.create(600, 500, 'dude');
+            dude.setCollideWorldBounds(true);
+            dude.setVelocityX(-50);
+            dude.anims.play('left', true);
+            dude.life = 100;
+        }
+
+
+        function createAnimations(gameinstance) {
+            gameinstance.anims.create({
+                key: 'turn',
+                frames: [{ key: 'dude', frame: 4 }],
+                frameRate: 5
+            });
+
+            gameinstance.anims.create({
+                key: 'right',
+                frames: gameinstance.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+                frameRate: 5,
+                repeat: -1
+            });
+
+            gameinstance.anims.create({
+                key: 'left',
+                frames: gameinstance.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+                frameRate: 5,
+                repeat: -1
+            });
+
+        }
+
+
+
+
+    </script>
+</body>
+
+</html>

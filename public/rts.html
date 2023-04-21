@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>RTS</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <ul id="messages"></ul>
+    <form id="form" action="">
+        <input id="input" autocomplete="off" /><button>Send</button>
+    </form>
+
+
+    <button id="addplayerbutton"></button>
+    <div id="highscorediv"></div>
+
+
+
+    <script type="text/javascript">
+
+        var config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: false,
+                    debug: false
+                }
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            }
+        };
+
+        var dudeid = 1;
+        var players;
+        var enemies;
+        // var target;
+        var vectors = [];
+        var stars;
+        var bombs;
+        var cursors = [];
+        var score = 0;
+        var gameOver = false;
+        var scoreText;
+        var buildmode = 0;
+        var statics;
+
+        var rectangle;
+
+        let buildicon;
+
+        let addeddudes = 1;
+
+
+        var game = new Phaser.Game(config);
+
+        function preload() {
+            this.load.image('background', 'assets/background.png');
+            this.load.image('cursor', 'assets/cursor2.png');
+            this.load.image('building', 'assets/base1.png');
+            this.load.image('hammer', 'assets/hammer.png');
+            this.load.image('grass', 'assets/grass.png');
+
+
+
+
+            this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+
+        }
+
+      
+
+        function addDude(gameinstance, x, y, type) {
+            if (!x) {
+                x = Math.random() * 500;
+                y = Math.random() * 500
+            }
+
+
+            var player = players.create(x, y, 'dude');
+            player.life = 50;
+            player.attackready = true;
+
+
+            player.body.setBounce(0);
+            player.setBounce(0);
+            if (type) {
+                player.type = type;
+            }
+
+            if (player.type == 'enemy') {
+                player.setTint('0xff0000');
+            }
+
+
+
+
+
+            gameinstance.physics.add.existing(player);
+            player.setBounce(0);
+            player.setInteractive();
+            player.setCollideWorldBounds(true);
+            player.depth = 2;
+
+            var vectorWithId = {
+                vector: new Phaser.Math.Vector2(),
+                dudeid: dudeid
+            };
+
+            var cursorWithId = {
+                cursor: gameinstance.add.image(player.x, player.y, 'cursor'),
+                dudeid: dudeid
+            }
+
+            cursorWithId.cursor.depth = 1;
+
+            vectors.push(vectorWithId);
+            cursors.push(cursorWithId);
+            player.clicked = false;
+            player.dudeid = dudeid;
+            dudeid++;
+
+
+            player.on('pointerdown', () => {
+                if (!player.clicked) {
+                    player.tint = '0x00ff00';
+                    player.clicked = true;
+                    if (player.type != 'enemy') {
+                        buildicon.setVisible(true);
+                    }
+                } else {
+                    player.tint = '0xffffff';
+                    player.clicked = false;
+                    buildicon.setVisible(false);
+                }
+
+                if (player.type == 'enemy') {
+                    player.setTint('0xff0000');
+                }
+
+
+
+            })
+
+
+
+        }
+
+        function create() {
+            this.add.tileSprite(0, 0, game.config.width, game.config.height, 'grass').setOrigin(0);
+            let self = this;
+            this.input.mouse.disableContextMenu();
+            // this.background = this.add.image(400, 300, 'background');
+            // this.background.setInteractive();
+            this.pointertext = this.add.text(10, 10, '', { font: '16px Courier', fill: '#00ff00' });
+
+            self.input.on('pointermove', (pointer) => {
+                self.pointertext.setText('pozycja:' + pointer.x + ' ' + pointer.y);
+            })
+
+            buildicon = this.add.image(760, 570, 'hammer').setScale(0.5);
+            buildicon.setVisible(false);
+            buildicon.setInteractive();
+
+            buildicon.on('pointerover', (pointer) => {
+                self.pointertext.setText(pointer.x);
+                buildicon.setTint(0xffffff);
+                buildicon.setAlpha(0.8);
+            })
+
+            buildicon.on('pointerout', (pointer) => {
+                buildicon.setTint(0xffffff);
+                buildicon.setAlpha(1);
+            })
+
+            buildicon.on('pointerdown', (pointer) => {
+                buildmode = 1;
+                let building = this.physics.add.sprite(pointer.x, pointer.y, 'building');
+                building.name = 'building';
+                building.placed = false;
+                building.setInteractive();
+                building.setScale(0.8);
+                // building.bounce = 0;
+                building.body.immovable = 1;
+
+                let collider = self.physics.add.collider(players, building, attackbase, null, self);
+                collider.bounce = 0;
+                building.on('pointerdown', function () {
+                    // building.destroy();
+                    if (building.ready) {
+                        console.log(dudeid);
+                        addDude(self, building.x + 100, building.y +100 - (50 * addeddudes) , 'player');
+                        addeddudes += 1;
+                    }
+                })
+
+                self.input.on('pointermove', (pointer) => {
+                    if (!building.placed) {
+                        building.x = pointer.x;
+                        building.y = pointer.y;
+                    }
+                })
+
+                if (buildmode) {
+                    self.input.once('pointerdown', function (pointer, gameObjects) {
+                        console.log('działą??');
+                        building.placed = true;
+                        buildmode = 0;
+
+                        self.time.addEvent({
+                            delay: 1000,
+                            loop: true,
+                            callback: function () {
+                                building.ready = 1;
+
+
+                            }
+                        })
+
+                    });
+
+                }
+            })
+
+
+            players = this.physics.add.group();
+ 
+            this.physics.world.setBounds(0, 0, 800, 600);
+            this.physics.world.gravity.y = 0;
+
+            addDude(this, 600, 200, 'player');
+            addDude(this, 700, 50, 'enemy');
+            addDude(this, 700, 120, 'enemy');
+            addDude(this, 500, 120, 'enemy');
+            addDude(this, 200, 120, 'enemy');
+
+
+
+
+
+
+            this.input.on('pointerdown', (pointer) => {
+                if (!buildmode) {
+                    players.children.iterate((player) => {
+
+                        if (pointer.rightButtonDown()) {
+                            player.clicked = false;
+                            player.tint = '0xffffff';
+                            if (player.type == 'enemy') {
+                                player.tint = '0xff0000';
+                            }
+                            buildicon.setVisible(false);
+
+                        }
+                        if (player.clicked) {
+
+                            if (!(pointer.x > 700 && pointer.y > 530)) {
+                                let target = vectors.find((el) => el.dudeid == player.dudeid).vector;
+                                let cursor = cursors.find((el) => el.dudeid == player.dudeid).cursor;
+                                target.x = pointer.x;
+                                target.y = pointer.y;
+                                cursor.x = pointer.x;
+                                cursor.y = pointer.y;
+
+                                // let vector = vectors.find((el) => el.dudeid == player.dudeid);
+                                this.physics.moveToObject(player, target, 150);
+                            }
+                        }
+                    })
+                }
+
+            });
+
+
+            createAnimations(this);
+
+            document.querySelector('#addplayerbutton').addEventListener('click', function () {
+                addDude(self);
+            })
+
+
+
+        }
+
+        function placeBuilding() {
+
+        }
+
+
+        function attackbase(building, dude) {
+
+            dude.x += 20;
+
+
+
+
+        }
+
+        function update() {
+            let self = this;
+
+            buildicon.on('pointerup', (pointer) => {
+                buildicon.setTint(0xffffff);
+                buildicon.setAlpha(1);
+            })
+
+
+            players.children.iterate((player) => {
+                goDude(player);
+
+            });
+
+            players.children.each(function (player) {
+
+                if (player.life <= 0) {
+                    // player.destroy();
+
+                    player.x = 1000;
+                }
+
+                players.children.each((another) => {
+                    if (player.type != another.type) {
+
+                     
+
+
+                        if (Math.abs(another.x - player.x) < 50 && Math.abs(another.y - player.y) < 50) {
+
+                            if (player.type == 'player') {
+                                player.setTint('0x0fbb00');
+                            }
+
+                            if (player.type == 'enemy') {
+                                player.setTint('0xffff00');
+                            }
+
+
+                            if (player.attackready) {
+                                console.log('ATAKUJE!!');
+                                another.life -= 10;
+                                console.log(another.life);
+                                console.log(player.life);
+                                player.attackready = false;
+
+                                setTimeout(() => {
+                                    player.attackready = true;
+                                }, 1000)
+                            }
+
+                        }
+                    }
+                })
+
+                // players.children.each(function (obj2) {
+                //     if(obj1.type != obj2.type){
+                //         var distance = Phaser.Math.Distance.Between(obj1.x, obj1.y, obj2.x, obj2.y);
+                //         if (distance < 100 && distance > 0) {
+
+                //             if(obj1.type == 'enemy'){
+                //                 self.physics.moveToObject(obj1,obj2,50);
+                //             }
+
+                //             console.log(distance,'ATAKUJE!!!');
+                //         }
+                //     }
+                // });
+
+                if(player){
+                    if (player.type == 'enemy') {
+                        let building = self.children.getByName('building');
+
+                        if (self.children.getByName('building')) {
+                            if (player.type == 'enemy') {
+                                if (building.placed) {
+                                    if(player){
+                                     self.physics.moveToObject(player, building, 50);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            });
+
+        }
+
+        function goDude(player) {
+
+            let target = vectors.find((el) => el.dudeid == player.dudeid).vector;
+            const tolerance = 4;
+            const distance = Phaser.Math.Distance.Between(player.x, player.y, target.x, target.y);
+            if (player.body.speed > 0) {
+                if (target.x > player.x) {
+                    player.anims.play('right', true);
+                }
+                if (target.x < player.x) {
+                    player.anims.play('left', true);
+                }
+                if (distance < tolerance) {
+                    player.body.reset(target.x, target.y);
+                }
+            } else {
+                player.anims.play('turn', true);
+
+
+            }
+
+        }
+
+
+
+
+
+
+        function createAnimations(gameinstance) {
+            gameinstance.anims.create({
+                key: 'turn',
+                frames: [{ key: 'dude', frame: 4 }],
+                frameRate: 20
+            });
+
+            gameinstance.anims.create({
+                key: 'right',
+                frames: gameinstance.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+                frameRate: 5,
+                repeat: -1
+            });
+
+            gameinstance.anims.create({
+                key: 'left',
+                frames: gameinstance.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+                frameRate: 5,
+                repeat: -1
+            });
+
+        }
+
+
+
+
+    </script>
+
+
+    <script>
+
+
+
+    </script>
+
+
+</body>
+
+</html>
