@@ -44,6 +44,7 @@
         let player1score = 0;
         let player2score = 0;
         let czas = 120;
+        let endgame = false;
 
 
 
@@ -52,11 +53,13 @@
             this.load.image('ball', 'assets/ball.png');
             this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
             this.load.spritesheet('dude2', 'assets/dude2.png', { frameWidth: 32, frameHeight: 48 });
-            this.load.image('platform', 'assets/platform.png');
-            this.load.image('platform2', 'assets/platform2.png');
+            this.load.image('platform', 'assets/platformwhite.png');
+            this.load.image('platform2', 'assets/platformwhite2.png');
         }
 
         function create() {
+            this.velocitytext = this.add.text('Ball velocity:',500,10);
+            let self = this;
             
             cursors = this.input.keyboard.createCursorKeys();
             this.add.tileSprite(0, 0, game.config.width, game.config.height, 'grass').setOrigin(0);
@@ -119,7 +122,12 @@
                 callback: function () {
                     czas -= 1;
                     console.log(czas);
-                    timetext.setText('Czas:'+czas)
+                    timetext.setText('Czas:'+czas);
+                    if(czas < 0){
+                        endgame = true;
+                        self.add.text(400,300,'KONIEC GRY', {fill:'#00FF00'} );
+
+                    }
                 }
             })
 
@@ -132,6 +140,12 @@
         }
 
         function update() {
+
+            this.velocitytext.setText(ball.velocity);
+
+            if(endgame){
+                return
+            }
 
             if (ball.x > 800 || ball.x < 0) {
 

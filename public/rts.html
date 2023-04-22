@@ -65,6 +65,8 @@
 
         let addeddudes = 1;
 
+        let gold = 100;
+
 
         var game = new Phaser.Game(config);
 
@@ -78,13 +80,14 @@
 
 
 
-            this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+            this.load.spritesheet('dude', 'assets/dudeaxe.png', { frameWidth: 32, frameHeight: 48 });
 
         }
 
-      
+
 
         function addDude(gameinstance, x, y, type) {
+         
             if (!x) {
                 x = Math.random() * 500;
                 y = Math.random() * 500
@@ -93,6 +96,16 @@
 
             var player = players.create(x, y, 'dude');
             player.life = 50;
+            player.cost = 20;
+
+            if (gold < player.cost) {
+
+            }
+
+            if(type == 'player'){
+                gold -= player.cost;
+                console.log(gold);
+            }
             player.attackready = true;
 
 
@@ -132,6 +145,7 @@
             cursors.push(cursorWithId);
             player.clicked = false;
             player.dudeid = dudeid;
+            player.attacks = false;
             dudeid++;
 
 
@@ -166,7 +180,10 @@
             this.input.mouse.disableContextMenu();
             // this.background = this.add.image(400, 300, 'background');
             // this.background.setInteractive();
-            this.pointertext = this.add.text(10, 10, '', { font: '16px Courier', fill: '#00ff00' });
+            this.pointertext = this.add.text(10, 30, '', { font: '16px Courier', fill: '#00ff00' });
+            console.log(gold);
+            this.goldtext = this.add.text(10, 10, 'Złoto:'+gold, { font: '16px Courier', fill: '#ffff00' });
+
 
             self.input.on('pointermove', (pointer) => {
                 self.pointertext.setText('pozycja:' + pointer.x + ' ' + pointer.y);
@@ -188,8 +205,14 @@
             })
 
             buildicon.on('pointerdown', (pointer) => {
+
+
+
+
+
                 buildmode = 1;
                 let building = this.physics.add.sprite(pointer.x, pointer.y, 'building');
+                building.setAlpha(0.3);
                 building.name = 'building';
                 building.placed = false;
                 building.setInteractive();
@@ -203,7 +226,7 @@
                     // building.destroy();
                     if (building.ready) {
                         console.log(dudeid);
-                        addDude(self, building.x + 100, building.y +100 - (50 * addeddudes) , 'player');
+                        addDude(self, building.x + 100, building.y + 100 - (50 * (addeddudes % 4)), 'player');
                         addeddudes += 1;
                     }
                 })
@@ -215,17 +238,36 @@
                     }
                 })
 
+                self.input.once('pointerdown', (pointer) => {
+                    if(buildmode){
+                        if (pointer.rightButtonDown()) {
+                            console.log('righ click');
+                            buildmode = false;
+                            building.destroy();
+                            return;
+                        }
+                    }
+
+
+                })
+
+
                 if (buildmode) {
+
+
+
                     self.input.once('pointerdown', function (pointer, gameObjects) {
                         console.log('działą??');
                         building.placed = true;
+                   
                         buildmode = 0;
 
                         self.time.addEvent({
-                            delay: 1000,
+                            delay: 3000,
                             loop: true,
                             callback: function () {
                                 building.ready = 1;
+                                     building.setAlpha(1);
 
 
                             }
@@ -238,7 +280,7 @@
 
 
             players = this.physics.add.group();
- 
+
             this.physics.world.setBounds(0, 0, 800, 600);
             this.physics.world.gravity.y = 0;
 
@@ -311,6 +353,7 @@
         }
 
         function update() {
+            this.goldtext.setText('Złoto:'+gold);
             let self = this;
 
             buildicon.on('pointerup', (pointer) => {
@@ -326,6 +369,7 @@
 
             players.children.each(function (player) {
 
+                player.attacks = false;
                 if (player.life <= 0) {
                     // player.destroy();
 
@@ -335,11 +379,11 @@
                 players.children.each((another) => {
                     if (player.type != another.type) {
 
-                     
+
 
 
                         if (Math.abs(another.x - player.x) < 50 && Math.abs(another.y - player.y) < 50) {
-
+                            player.attacks = true;
                             if (player.type == 'player') {
                                 player.setTint('0x0fbb00');
                             }
@@ -348,17 +392,24 @@
                                 player.setTint('0xffff00');
                             }
 
-
                             if (player.attackready) {
-                                console.log('ATAKUJE!!');
-                                another.life -= 10;
-                                console.log(another.life);
-                                console.log(player.life);
-                                player.attackready = false;
 
-                                setTimeout(() => {
-                                    player.attackready = true;
-                                }, 1000)
+                                if (player.body.velocity.x == 0 && player.body.velocity.y == 0) {
+                                                 player.anims.play('axe', true);
+                                    player.attacks = true;
+                                    console.log('ATAKUJE!!'+player.type);
+
+                                    console.log(player.body.velocity);
+                                    another.life -= 10;
+                                    console.log(another.life);
+                                    console.log(player.life);
+                                    player.attackready = false;
+
+
+                                    setTimeout(() => {
+                                        player.attackready = true;
+                                    }, 1000)
+                                }
                             }
 
                         }
@@ -379,15 +430,15 @@
                 //     }
                 // });
 
-                if(player){
+                if (player) {
                     if (player.type == 'enemy') {
                         let building = self.children.getByName('building');
 
                         if (self.children.getByName('building')) {
                             if (player.type == 'enemy') {
                                 if (building.placed) {
-                                    if(player){
-                                     self.physics.moveToObject(player, building, 50);
+                                    if (player) {
+                                        //  self.physics.moveToObject(player, building, 50);
                                     }
                                 }
                             }
@@ -415,7 +466,9 @@
                     player.body.reset(target.x, target.y);
                 }
             } else {
-                player.anims.play('turn', true);
+                if (!player.attacks) {
+                    player.anims.play('turn', true);
+                }
 
 
             }
@@ -447,6 +500,14 @@
                 frameRate: 5,
                 repeat: -1
             });
+
+            gameinstance.anims.create({
+                key: 'axe',
+                frames: gameinstance.anims.generateFrameNumbers('dude', { start: 9, end: 11 }),
+                frameRate: 5,
+                repeat: -1
+            });
+
 
         }
 
