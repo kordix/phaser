@@ -45,6 +45,7 @@
         let player2score = 0;
         let czas = 120;
         let endgame = false;
+        let once = 1;
 
 
 
@@ -58,16 +59,20 @@
         }
 
         function create() {
-            this.velocitytext = this.add.text('Ball velocity:',500,10);
             let self = this;
-            
+
             cursors = this.input.keyboard.createCursorKeys();
             this.add.tileSprite(0, 0, game.config.width, game.config.height, 'grass').setOrigin(0);
             scoretext = this.add.text(50, 50, 'Wynik 0:0', { fill: '#ffff00' });
-            timetext = this.add.text(150, 50, 'Czas: '+czas, { fill: '#00ff00' });
+            timetext = this.add.text(150, 50, 'Czas: ' + czas, { fill: '#00ff00' });
 
+            this.velocitytext = this.add.text(400, 40, 'Ball velocity', { fill: '#ffff00' });
 
-            ball = this.physics.add.sprite(100, 100, 'ball').setScale(0.10);
+            ball = this.physics.add.sprite(400, 300, 'ball').setScale(0.10);
+            ball.setCollideWorldBounds(true);
+
+            ball.setVelocityX(0);
+            ball.setVelocityY(200);
 
             platforms = this.physics.add.staticGroup();
 
@@ -85,7 +90,7 @@
 
             player1 = this.physics.add.sprite(100, 450, 'dude');
 
-            player2 = this.physics.add.sprite(500, 450, 'dude2');
+            player2 = this.physics.add.sprite(700, 450, 'dude2');
             player2.setAlpha(0.9);
 
             this.physics.add.collider(platforms, ball);
@@ -107,6 +112,7 @@
             createAnimations(this);
 
             ball.setBounce(1.15);
+            ball.body.setMaxVelocity(700, 700);
 
 
             let ballcollider = this.physics.add.collider(player1, ball)
@@ -114,18 +120,20 @@
             // ballcollider.bodyBounce = 2;
             console.log(ballcollider);
             this.physics.add.collider(player2, ball)
-            this.physics.add.collider(player1, player2)
+            this.physics.add.collider(player1, player2, null, function () {
+                // return false;
+            })
 
-             this.time.addEvent({
+            this.time.addEvent({
                 delay: 1000,
                 loop: true,
                 callback: function () {
                     czas -= 1;
                     console.log(czas);
-                    timetext.setText('Czas:'+czas);
-                    if(czas < 0){
+                    timetext.setText('Czas:' + czas);
+                    if (czas < 0) {
                         endgame = true;
-                        self.add.text(400,300,'KONIEC GRY', {fill:'#00FF00'} );
+                        self.add.text(400, 300, 'KONIEC GRY', { fill: '#00FF00' });
 
                     }
                 }
@@ -141,35 +149,57 @@
 
         function update() {
 
-            this.velocitytext.setText(ball.velocity);
+            this.velocitytext.setText('x:' + ball.body.x);
 
-            if(endgame){
+            if (endgame) {
                 return
             }
 
-            if (ball.x > 800 || ball.x < 0) {
+            console.log(ball.width);
 
-                if(ball.y < 0){
-                    ball.y = 300;
-                    ball.x = 400;
+            if (ball.x >= (800 - 20) || ball.x <= 20) {
+                ball.setVelocityX(0);
+                ball.setVelocityY(0);
+
+
+
+                player1win = 0;
+                player2win = 0;
+
+
+                let whowin = 0;
+                if (ball.x > 100) {
+                    player1win = 1;
                 }
 
-            
-                setTimeout(()=>{
-                        if (ball.x < 0) {
-                        player2score += 1;
-                    }
+                if (ball.x < 100) {
+                    player2win = 1;
+                }
 
-                    if (ball.x > 800) {
-                        player1score += 1;
-                    }
-                        
+                if (once) {
+                    player1score += player1win;
+                    player2score += player2win;
+                    once = 0;
+                }
+
+                // ball.y = 1000;
+
+
+                setTimeout(() => {
+
+
                     ball.x = 400;
                     ball.y = 300;
-                    scoretext.setText('Wynik '+player1score+':'+player2score);
-                },1000)
+                    ball.setVelocityX(Math.random() * 400);
+                    ball.setVelocityY(Math.random() * 400);
+                    once = 1;
 
-               
+
+
+                    scoretext.setText('Wynik ' + player1score + ':' + player2score);
+                }, 1000)
+
+
             }
 
             var keyboard = this.input.keyboard;

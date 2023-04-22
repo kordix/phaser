@@ -47,6 +47,7 @@
 
         var dudeid = 1;
         var players;
+        let trees;
         var enemies;
         // var target;
         var vectors = [];
@@ -76,6 +77,7 @@
             this.load.image('building', 'assets/base1.png');
             this.load.image('hammer', 'assets/hammer.png');
             this.load.image('grass', 'assets/grass.png');
+            this.load.image('tree', 'assets/chojka.png');
 
 
 
@@ -87,7 +89,7 @@
 
 
         function addDude(gameinstance, x, y, type) {
-         
+
             if (!x) {
                 x = Math.random() * 500;
                 y = Math.random() * 500
@@ -102,7 +104,7 @@
 
             }
 
-            if(type == 'player'){
+            if (type == 'player') {
                 gold -= player.cost;
                 console.log(gold);
             }
@@ -162,12 +164,6 @@
                     buildicon.setVisible(false);
                 }
 
-                if (player.type == 'enemy') {
-                    player.setTint('0xff0000');
-                }
-
-
-
             })
 
 
@@ -175,14 +171,13 @@
         }
 
         function create() {
+
             this.add.tileSprite(0, 0, game.config.width, game.config.height, 'grass').setOrigin(0);
             let self = this;
             this.input.mouse.disableContextMenu();
-            // this.background = this.add.image(400, 300, 'background');
-            // this.background.setInteractive();
             this.pointertext = this.add.text(10, 30, '', { font: '16px Courier', fill: '#00ff00' });
             console.log(gold);
-            this.goldtext = this.add.text(10, 10, 'Złoto:'+gold, { font: '16px Courier', fill: '#ffff00' });
+            this.goldtext = this.add.text(10, 10, 'Złoto:' + gold, { font: '16px Courier', fill: '#ffff00' });
 
 
             self.input.on('pointermove', (pointer) => {
@@ -204,11 +199,9 @@
                 buildicon.setAlpha(1);
             })
 
+
+            //tryb budowy
             buildicon.on('pointerdown', (pointer) => {
-
-
-
-
 
                 buildmode = 1;
                 let building = this.physics.add.sprite(pointer.x, pointer.y, 'building');
@@ -223,14 +216,13 @@
                 let collider = self.physics.add.collider(players, building, attackbase, null, self);
                 collider.bounce = 0;
                 building.on('pointerdown', function () {
-                    // building.destroy();
                     if (building.ready) {
-                        console.log(dudeid);
                         addDude(self, building.x + 100, building.y + 100 - (50 * (addeddudes % 4)), 'player');
                         addeddudes += 1;
                     }
                 })
 
+                //stawianie budynku
                 self.input.on('pointermove', (pointer) => {
                     if (!building.placed) {
                         building.x = pointer.x;
@@ -238,10 +230,10 @@
                     }
                 })
 
+                //anulacja buildmode na prawy klik
                 self.input.once('pointerdown', (pointer) => {
-                    if(buildmode){
+                    if (buildmode) {
                         if (pointer.rightButtonDown()) {
-                            console.log('righ click');
                             buildmode = false;
                             building.destroy();
                             return;
@@ -251,15 +243,12 @@
 
                 })
 
-
+                //stawianie budynku
                 if (buildmode) {
-
-
-
                     self.input.once('pointerdown', function (pointer, gameObjects) {
                         console.log('działą??');
                         building.placed = true;
-                   
+
                         buildmode = 0;
 
                         self.time.addEvent({
@@ -267,7 +256,7 @@
                             loop: true,
                             callback: function () {
                                 building.ready = 1;
-                                     building.setAlpha(1);
+                                building.setAlpha(1);
 
 
                             }
@@ -284,17 +273,9 @@
             this.physics.world.setBounds(0, 0, 800, 600);
             this.physics.world.gravity.y = 0;
 
-            addDude(this, 600, 200, 'player');
-            addDude(this, 700, 50, 'enemy');
-            addDude(this, 700, 120, 'enemy');
-            addDude(this, 500, 120, 'enemy');
-            addDude(this, 200, 120, 'enemy');
 
 
-
-
-
-
+            //go command
             this.input.on('pointerdown', (pointer) => {
                 if (!buildmode) {
                     players.children.iterate((player) => {
@@ -327,6 +308,16 @@
 
             });
 
+            addDude(this, 600, 200, 'player');
+            addDude(this, 400, 100, 'enemy');
+
+            trees = this.physics.add.group();
+            let tree = trees.create(300, 300, 'tree');
+            tree.body.immovable = true;
+            tree.life = 50;
+
+            this.physics.add.collider(players, trees)
+
 
             createAnimations(this);
 
@@ -338,22 +329,14 @@
 
         }
 
-        function placeBuilding() {
-
-        }
-
 
         function attackbase(building, dude) {
-
             dude.x += 20;
-
-
-
-
         }
 
         function update() {
-            this.goldtext.setText('Złoto:'+gold);
+
+            this.goldtext.setText('Złoto:' + gold);
             let self = this;
 
             buildicon.on('pointerup', (pointer) => {
@@ -363,25 +346,52 @@
 
 
             players.children.iterate((player) => {
-                goDude(player);
+                goingDude(player);
 
             });
+
 
             players.children.each(function (player) {
 
                 player.attacks = false;
                 if (player.life <= 0) {
-                    // player.destroy();
-
                     player.x = 1000;
                 }
 
+                //drzewa są zbierane
+                trees.children.each((tree) => {
+                    if (Math.abs(player.x - tree.x) < 100 && Math.abs(player.y - tree.y) < 100) {
+                        tree.setTint(0xFF0000);
+                        player.attacks = true;
+                        if (player.attackready) {
+
+                            if (player.body.velocity.x == 0 && player.body.velocity.y == 0) {
+                                player.anims.play('axe', true);
+                                player.attacks = true;
+                                player.attackready = false;
+
+                                tree.life -= 10;
+
+                                if (tree.life <= 0) {
+                                    tree.x = 1000;
+                                    player.wood = true;
+
+                                }
+                                console.log(tree.life);
+
+                                setTimeout(() => {
+                                    player.attackready = true;
+                                }, 1000)
+                            }
+                        }
+
+                    }
+                })
+
+
+                //players atakują each other
                 players.children.each((another) => {
                     if (player.type != another.type) {
-
-
-
-
                         if (Math.abs(another.x - player.x) < 50 && Math.abs(another.y - player.y) < 50) {
                             player.attacks = true;
                             if (player.type == 'player') {
@@ -395,16 +405,10 @@
                             if (player.attackready) {
 
                                 if (player.body.velocity.x == 0 && player.body.velocity.y == 0) {
-                                                 player.anims.play('axe', true);
+                                    player.anims.play('axe', true);
                                     player.attacks = true;
-                                    console.log('ATAKUJE!!'+player.type);
-
-                                    console.log(player.body.velocity);
                                     another.life -= 10;
-                                    console.log(another.life);
-                                    console.log(player.life);
                                     player.attackready = false;
-
 
                                     setTimeout(() => {
                                         player.attackready = true;
@@ -416,20 +420,7 @@
                     }
                 })
 
-                // players.children.each(function (obj2) {
-                //     if(obj1.type != obj2.type){
-                //         var distance = Phaser.Math.Distance.Between(obj1.x, obj1.y, obj2.x, obj2.y);
-                //         if (distance < 100 && distance > 0) {
-
-                //             if(obj1.type == 'enemy'){
-                //                 self.physics.moveToObject(obj1,obj2,50);
-                //             }
-
-                //             console.log(distance,'ATAKUJE!!!');
-                //         }
-                //     }
-                // });
-
+                //enemy atakują budynek
                 if (player) {
                     if (player.type == 'enemy') {
                         let building = self.children.getByName('building');
@@ -450,11 +441,12 @@
 
         }
 
-        function goDude(player) {
+        function goingDude(player) {
 
             let target = vectors.find((el) => el.dudeid == player.dudeid).vector;
             const tolerance = 4;
             const distance = Phaser.Math.Distance.Between(player.x, player.y, target.x, target.y);
+
             if (player.body.speed > 0) {
                 if (target.x > player.x) {
                     player.anims.play('right', true);
@@ -466,8 +458,12 @@
                     player.body.reset(target.x, target.y);
                 }
             } else {
-                if (!player.attacks) {
+                if (!player.attacks && !player.wood) {
                     player.anims.play('turn', true);
+                }
+
+                if (player.wood) {
+                    player.anims.play('wood', true);
                 }
 
 
@@ -508,8 +504,17 @@
                 repeat: -1
             });
 
+            gameinstance.anims.create({
+                key: 'wood',
+                frames: [{ key: 'dude', frame: 12 }],
+                repeat: -1
+            });
+
 
         }
+
+
+
 
 
 
