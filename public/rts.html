@@ -67,6 +67,10 @@
         let addeddudes = 1;
 
         let gold = 100;
+        let wood = 100;
+
+        let goldmine;
+        let buildings;
 
 
         var game = new Phaser.Game(config);
@@ -78,6 +82,10 @@
             this.load.image('hammer', 'assets/hammer.png');
             this.load.image('grass', 'assets/grass.png');
             this.load.image('tree', 'assets/chojka.png');
+            this.load.image('goldmine', 'assets/goldmine.png');
+            this.load.image('goldmine2', 'assets/goldmine2.png');
+
+
 
 
 
@@ -170,7 +178,16 @@
 
         }
 
+
+        function addTree(x, y) {
+            let tree = trees.create(x, y, 'tree');
+            tree.body.immovable = true;
+            tree.life = 50;
+        }
+
         function create() {
+
+
 
             this.add.tileSprite(0, 0, game.config.width, game.config.height, 'grass').setOrigin(0);
             let self = this;
@@ -178,6 +195,8 @@
             this.pointertext = this.add.text(10, 30, '', { font: '16px Courier', fill: '#00ff00' });
             console.log(gold);
             this.goldtext = this.add.text(10, 10, 'Złoto:' + gold, { font: '16px Courier', fill: '#ffff00' });
+            this.woodtext = this.add.text(100, 10, 'Drewno:' + wood, { font: '16px Courier', fill: '#FFaa00' });
+
 
 
             self.input.on('pointermove', (pointer) => {
@@ -199,12 +218,14 @@
                 buildicon.setAlpha(1);
             })
 
+            buildings = this.physics.add.group();
+            trees = this.physics.add.group();
 
             //tryb budowy
             buildicon.on('pointerdown', (pointer) => {
 
                 buildmode = 1;
-                let building = this.physics.add.sprite(pointer.x, pointer.y, 'building');
+                building = buildings.create(pointer.x, pointer.y, 'building');
                 building.setAlpha(0.3);
                 building.name = 'building';
                 building.placed = false;
@@ -215,7 +236,10 @@
 
                 let collider = self.physics.add.collider(players, building, attackbase, null, self);
                 collider.bounce = 0;
-                building.on('pointerdown', function () {
+
+                //funkcjonalność budynku
+                building.on('pointerdown', function (pointer) {
+
                     if (building.ready) {
                         addDude(self, building.x + 100, building.y + 100 - (50 * (addeddudes % 4)), 'player');
                         addeddudes += 1;
@@ -265,6 +289,12 @@
                     });
 
                 }
+
+
+                //wchodzą przeciwcniy
+
+
+
             })
 
 
@@ -312,19 +342,27 @@
             addDude(this, 400, 100, 'enemy');
 
             trees = this.physics.add.group();
-            let tree = trees.create(300, 300, 'tree');
-            tree.body.immovable = true;
-            tree.life = 50;
+            addTree(100, 300);
+            addTree(200, 300);
+
+            self.time.addEvent({
+                delay: 10000,
+                loop: true,
+                callback: function () {
+                    console.log('fsadfds');
+                    addDude(self, 700, 50, 'enemy');
+                    addTree(Math.random() * 700, Math.random() * 50);
+
+                }
+            })
+
 
             this.physics.add.collider(players, trees)
 
+            addGoldMine(this);
+
 
             createAnimations(this);
-
-            document.querySelector('#addplayerbutton').addEventListener('click', function () {
-                addDude(self);
-            })
-
 
 
         }
@@ -337,6 +375,8 @@
         function update() {
 
             this.goldtext.setText('Złoto:' + gold);
+            this.woodtext.setText('Drewno::' + wood);
+
             let self = this;
 
             buildicon.on('pointerup', (pointer) => {
@@ -359,48 +399,88 @@
                 }
 
                 //drzewa są zbierane
-                trees.children.each((tree) => {
-                    if (Math.abs(player.x - tree.x) < 100 && Math.abs(player.y - tree.y) < 100) {
-                        tree.setTint(0xFF0000);
-                        player.attacks = true;
-                        if (player.attackready) {
+                if (player.type == 'player') {
+                    trees.children.each((tree) => {
+                        if (Math.abs(player.x - tree.x) < 100 && Math.abs(player.y - tree.y) < 100) {
+                            tree.setTint(0xFF0000);
+                            player.attacks = true;
+                            if (player.attackready) {
 
-                            if (player.body.velocity.x == 0 && player.body.velocity.y == 0) {
-                                player.anims.play('axe', true);
-                                player.attacks = true;
-                                player.attackready = false;
+                                if (player.body.velocity.x == 0 && player.body.velocity.y == 0) {
 
-                                tree.life -= 10;
+                                    player.attacks = true;
+                                    player.attackready = false;
 
-                                if (tree.life <= 0) {
-                                    tree.x = 1000;
-                                    player.wood = true;
+                                    tree.life -= 10;
 
+                                    if (tree.life <= 0) {
+                                        tree.x = 1000;
+                                        player.wood = true;
+
+                                    }
+                                    console.log(tree.life);
+
+                                    setTimeout(() => {
+                                        player.attackready = true;
+                                    }, 1000)
                                 }
-                                console.log(tree.life);
+                            }
 
+                        }
+                    })
+                }
+
+                //złoto jest zbierane
+
+                if (player.type == 'player') {
+                    if (Math.abs(player.x - goldmine.x) < 100 && Math.abs(player.y - goldmine.y) < 100) {
+                        if (player.body.velocity.x == 0) {
+                            if (!player.gold) {
+                                goldmine.setTexture('goldmine2');
+                                player.gold = true;
+                                player.setVelocityX(0);
+                                player.setVelocityY(0);
+
+                                player.setVisible(false);
                                 setTimeout(() => {
-                                    player.attackready = true;
-                                }, 1000)
+                                    player.setVisible(true);
+                                    goldmine.setTexture('goldmine');
+
+                                }, 5000)
                             }
                         }
-
                     }
-                })
+                }
 
+                //player oddaje surowce
+                if (player.wood || player.gold) {
+                    buildings.children.each((bulding) => {
+                        if (Math.abs(player.x - building.x) < 150 && Math.abs(player.y - building.y) < 150) {
+
+
+                            if (player.wood) {
+                                wood += 10;
+                            }
+
+                            if (player.gold) {
+                                gold += 10;
+                            }
+
+                            player.wood = 0;
+                            player.gold = 0;
+
+                            console.log('ODDAJE DREWNO');
+
+                        }
+
+                    })
+                }
 
                 //players atakują each other
                 players.children.each((another) => {
                     if (player.type != another.type) {
                         if (Math.abs(another.x - player.x) < 50 && Math.abs(another.y - player.y) < 50) {
                             player.attacks = true;
-                            if (player.type == 'player') {
-                                player.setTint('0x0fbb00');
-                            }
-
-                            if (player.type == 'enemy') {
-                                player.setTint('0xffff00');
-                            }
 
                             if (player.attackready) {
 
@@ -446,8 +526,9 @@
             let target = vectors.find((el) => el.dudeid == player.dudeid).vector;
             const tolerance = 4;
             const distance = Phaser.Math.Distance.Between(player.x, player.y, target.x, target.y);
-
-            if (player.body.speed > 0) {
+            if (player.attacks) {
+                player.anims.play('axe', true);
+            } if (player.body.speed > 0) {
                 if (target.x > player.x) {
                     player.anims.play('right', true);
                 }
@@ -458,12 +539,16 @@
                     player.body.reset(target.x, target.y);
                 }
             } else {
-                if (!player.attacks && !player.wood) {
+                if (!player.attacks && !player.wood && !player.gold) {
                     player.anims.play('turn', true);
                 }
 
                 if (player.wood) {
                     player.anims.play('wood', true);
+                }
+
+                if (player.gold) {
+                    player.anims.play('gold', true);
                 }
 
 
@@ -472,6 +557,13 @@
         }
 
 
+
+        function addGoldMine(gameinstance) {
+            console.log(gameinstance);
+            goldmine = gameinstance.physics.add.sprite(500, 500, 'goldmine').setScale(0.5);
+
+
+        }
 
 
 
@@ -507,6 +599,18 @@
             gameinstance.anims.create({
                 key: 'wood',
                 frames: [{ key: 'dude', frame: 12 }],
+                repeat: -1
+            });
+
+            gameinstance.anims.create({
+                key: 'gold',
+                frames: [{ key: 'dude', frame: 13 }],
+                repeat: -1
+            });
+
+            gameinstance.anims.create({
+                key: 'gold',
+                frames: [{ key: 'dude', frame: 13 }],
                 repeat: -1
             });
 
