@@ -14,20 +14,29 @@
 
 <body>
 
-    <ul id="messages"></ul>
-    <form id="form" action="">
-        <input id="input" autocomplete="off" /><button>Send</button>
-    </form>
+    <div id="game-container">
+
+    </div>
+
+    <div id="rekrutacjamenu" style="opacity:0">
+        Rekrutuj:
+
+        <button id="recruitdudebutton">Dude</button>
+        <button id="recruitbowmanbutton">Bowman</button>
+
+    </div>
 
 
-    <button id="addplayerbutton"></button>
-    <div id="highscorediv"></div>
+
+
+
 
 
 
     <script type="text/javascript">
 
         var config = {
+            parent: 'game-container',
             type: Phaser.AUTO,
             width: 800,
             height: 600,
@@ -66,14 +75,19 @@
 
         let addeddudes = 1;
 
-        let gold = 100;
+        let gold = 150;
         let wood = 100;
 
         let goldmine;
         let buildings;
+        let ghostbuilding;
+        let gameovertext;
+        let wave = 1;
 
 
         var game = new Phaser.Game(config);
+
+        let gameinstance;
 
         function preload() {
             this.load.image('background', 'assets/background.png');
@@ -84,6 +98,7 @@
             this.load.image('tree', 'assets/chojka.png');
             this.load.image('goldmine', 'assets/goldmine.png');
             this.load.image('goldmine2', 'assets/goldmine2.png');
+            this.load.image('arrow', 'assets/arrow.png');
 
 
 
@@ -96,7 +111,20 @@
 
 
 
-        function addDude(gameinstance, x, y, type) {
+        function addDude(gameinstance, x, y, type, klasa) {
+            let cost = 20;
+            let attackrange = 50;
+            if (klasa == 'bowman') {
+                cost = 50;
+                attackrange = 120;
+            }
+
+            if (type == 'player') {
+                if (gold < cost) {
+                    return;
+                }
+            }
+
 
             if (!x) {
                 x = Math.random() * 500;
@@ -106,15 +134,14 @@
 
             var player = players.create(x, y, 'dude');
             player.life = 50;
-            player.cost = 20;
+            player.cost = cost;
+            player.klasa = klasa;
+            player.attackrange = attackrange;
 
-            if (gold < player.cost) {
 
-            }
 
             if (type == 'player') {
                 gold -= player.cost;
-                console.log(gold);
             }
             player.attackready = true;
 
@@ -153,6 +180,7 @@
 
             vectors.push(vectorWithId);
             cursors.push(cursorWithId);
+
             player.clicked = false;
             player.dudeid = dudeid;
             player.attacks = false;
@@ -160,9 +188,12 @@
 
 
             player.on('pointerdown', () => {
+                console.log('playerointerdown');
                 if (!player.clicked) {
                     player.tint = '0x00ff00';
+                    declick();
                     player.clicked = true;
+
                     if (player.type != 'enemy') {
                         buildicon.setVisible(true);
                     }
@@ -179,21 +210,35 @@
         }
 
 
+
+
         function addTree(x, y) {
             let tree = trees.create(x, y, 'tree');
             tree.body.immovable = true;
             tree.life = 50;
+
+            tree.setInteractive();
+
+            tree.on('pointerdown',function(){
+                console.log(tree);
+            })
         }
 
         function create() {
+            gameinstance = this;
+
+
+
+
 
 
 
             this.add.tileSprite(0, 0, game.config.width, game.config.height, 'grass').setOrigin(0);
+
+            gameovertext = this.add.text(400, 300, '', { font: '16px Courier', fill: '#00ff00' });
             let self = this;
             this.input.mouse.disableContextMenu();
             this.pointertext = this.add.text(10, 30, '', { font: '16px Courier', fill: '#00ff00' });
-            console.log(gold);
             this.goldtext = this.add.text(10, 10, 'Złoto:' + gold, { font: '16px Courier', fill: '#ffff00' });
             this.woodtext = this.add.text(100, 10, 'Drewno:' + wood, { font: '16px Courier', fill: '#FFaa00' });
 
@@ -225,34 +270,8 @@
             buildicon.on('pointerdown', (pointer) => {
 
                 buildmode = 1;
-                building = buildings.create(pointer.x, pointer.y, 'building');
-                building.setAlpha(0.3);
-                building.name = 'building';
-                building.placed = false;
-                building.setInteractive();
-                building.setScale(0.8);
-                // building.bounce = 0;
-                building.body.immovable = 1;
-
-                let collider = self.physics.add.collider(players, building, attackbase, null, self);
-                collider.bounce = 0;
-
-                //funkcjonalność budynku
-                building.on('pointerdown', function (pointer) {
-
-                    if (building.ready) {
-                        addDude(self, building.x + 100, building.y + 100 - (50 * (addeddudes % 4)), 'player');
-                        addeddudes += 1;
-                    }
-                })
-
-                //stawianie budynku
-                self.input.on('pointermove', (pointer) => {
-                    if (!building.placed) {
-                        building.x = pointer.x;
-                        building.y = pointer.y;
-                    }
-                })
+                ghostbuilding = this.add.sprite(pointer.x, pointer.y, 'building');
+                ghostbuilding.setAlpha(0.3);
 
                 //anulacja buildmode na prawy klik
                 self.input.once('pointerdown', (pointer) => {
@@ -270,7 +289,6 @@
                 //stawianie budynku
                 if (buildmode) {
                     self.input.once('pointerdown', function (pointer, gameObjects) {
-                        console.log('działą??');
                         building.placed = true;
 
                         buildmode = 0;
@@ -306,7 +324,15 @@
 
 
             //go command
-            this.input.on('pointerdown', (pointer) => {
+            this.input.on('pointerdown', (pointer, gameobject) => {
+
+                const inputManager = this.input.manager;
+
+                if(inputManager.hitTest(pointer, players.getChildren(), self.cameras.main).length){
+                    return;
+                }
+
+
                 if (!buildmode) {
                     players.children.iterate((player) => {
 
@@ -338,20 +364,30 @@
 
             });
 
-            addDude(this, 600, 200, 'player');
+            addDude(this, 600, 200, 'player', 'bowman');
+            addDude(this, 600, 201, 'player', 'bowman');
+
             addDude(this, 400, 100, 'enemy');
 
             trees = this.physics.add.group();
             addTree(100, 300);
             addTree(200, 300);
 
+
+
             self.time.addEvent({
-                delay: 10000,
+                delay: 15000,
                 loop: true,
                 callback: function () {
-                    console.log('fsadfds');
-                    addDude(self, 700, 50, 'enemy');
-                    addTree(Math.random() * 700, Math.random() * 50);
+
+                    for (let i = 0; i < wave; i++) {
+                        addDude(self, 500 + Math.random() * 200, Math.random() * 200, 'enemy');
+                    }
+
+                    wave++;
+                    // addDude(self, 500 + Math.random() * 200, Math.random() * 200, 'enemy');
+                    // addDude(self, 500 + Math.random() * 200, Math.random() * 200, 'enemy');
+                    // addTree(Math.random() * 700, 100 + Math.random() * 500);
 
                 }
             })
@@ -360,16 +396,119 @@
             this.physics.add.collider(players, trees)
 
             addGoldMine(this);
-
+            addBuilding(this);
 
             createAnimations(this);
 
+            // let playerscollider = this.physics.add.collider(players, players, handleCollision, null, this);
+
+            this.physics.overlap(players, handleCollision, null, this);
+            // playerscollider.overlapOnly = true;
+
+        }
+
+        function handleCollision(object1, object2) {
+            // this function gets called when the objects collide
+            // you can add your custom logic to handle the collision here
+            // for example, you can prevent the objects from overlapping each other
+            // without applying any physics force to push them apart
+
+            // get the overlapping area between the objects
+            var overlap = new Phaser.Geom.Rectangle();
+            Phaser.Geom.Rectangle.Intersection(object1.getBounds(), object2.getBounds(), overlap);
+
+            // adjust the position of the objects to prevent them from overlapping
+            if (overlap.width > 0 && overlap.height > 0) {
+                if (object1.x < object2.x) {
+                    object1.x -= overlap.width / 2;
+                    object2.x += overlap.width / 2;
+                } else {
+                    object1.x += overlap.width / 2;
+                    object2.x -= overlap.width / 2;
+                }
+
+                if (object1.y < object2.y) {
+                    object1.y -= overlap.height / 2;
+                    object2.y += overlap.height / 2;
+                } else {
+                    object1.y += overlap.height / 2;
+                    object2.y -= overlap.height / 2;
+                }
+            }
+        }
+
+        function declick() {
+
+            const playerSprite = Phaser.Actions.GetFirst(players.getChildren(), { clicked: true });
+
+            if (playerSprite) {
+                playerSprite.clicked = false;
+                playerSprite.tint = '0xffffff';
+            }
+        }
+
+
+
+
+        function addBuilding(gameinstance) {
+            self = gameinstance;
+            building = buildings.create(100, 500, 'building');
+            building.placed = true;
+            building.ready = true;
+            building.life = 300;
+            building.setInteractive();
+            building.setScale(0.8);
+            building.setName('building')
+            // building.bounce = 0;
+            building.body.immovable = 1;
+
+            let collider = self.physics.add.collider(players, buildings, attackbase, null, self);
+            collider.bounce = 0;
+
+
+            //funkcjonalność budynku
+            building.on('pointerdown', function (pointer) {
+
+                console.log('building ointer down');
+
+                document.querySelector('#rekrutacjamenu').style.opacity = 1;
+
+                // if (building.ready) {
+                //     addDude(self, building.x + 100, building.y + 100 - (50 * (addeddudes % 4)), 'player');
+                //     addeddudes += 1;
+                // }
+            })
 
         }
 
 
-        function attackbase(building, dude) {
-            dude.x += 20;
+        function attackbase(dude, building) {
+
+            if (dude.type == 'enemy') {
+                dude.x += 20;
+
+
+                building.life -= 20;
+                if (building.life < 0) {
+                    building.x = 1000;
+
+
+
+                    gameovertext.setText('GAME OVER');
+
+
+
+                }
+            }
+
+            if (dude.type == 'player') {
+                if (building.life < 300) {
+                    building.life += 20;
+                    gold -= 10;
+                }
+            }
+
+            building.setAlpha(building.life / 300);
         }
 
         function update() {
@@ -378,6 +517,14 @@
             this.woodtext.setText('Drewno::' + wood);
 
             let self = this;
+            let inputManager = this.input.manager;
+
+            // Check for collision between the player sprite and any enemy sprites
+            const collidingEnemies = players.getChildren().filter(player => {
+                //   console.log(inputManager.hitTest(goldmine, player, self.cameras.main));
+                return inputManager.hitTest(player, goldmine, self.cameras.main);
+
+            });
 
             buildicon.on('pointerup', (pointer) => {
                 buildicon.setTint(0xffffff);
@@ -401,7 +548,7 @@
                 //drzewa są zbierane
                 if (player.type == 'player') {
                     trees.children.each((tree) => {
-                        if (Math.abs(player.x - tree.x) < 100 && Math.abs(player.y - tree.y) < 100) {
+                        if (Math.abs(player.x - tree.x) < 50 && Math.abs(player.y - tree.y) < 50) {
                             tree.setTint(0xFF0000);
                             player.attacks = true;
                             if (player.attackready) {
@@ -418,7 +565,6 @@
                                         player.wood = true;
 
                                     }
-                                    console.log(tree.life);
 
                                     setTimeout(() => {
                                         player.attackready = true;
@@ -469,7 +615,6 @@
                             player.wood = 0;
                             player.gold = 0;
 
-                            console.log('ODDAJE DREWNO');
 
                         }
 
@@ -479,13 +624,30 @@
                 //players atakują each other
                 players.children.each((another) => {
                     if (player.type != another.type) {
-                        if (Math.abs(another.x - player.x) < 50 && Math.abs(another.y - player.y) < 50) {
+                        if (Math.abs(another.x - player.x) < player.attackrange && Math.abs(another.y - player.y) < player.attackrange) {
                             player.attacks = true;
+
+                            if (another.type == 'enemy') {
+                                another.body.stop();
+                                another.body.stop();
+                                another.stop = true;
+
+                            }
 
                             if (player.attackready) {
 
                                 if (player.body.velocity.x == 0 && player.body.velocity.y == 0) {
-                                    player.anims.play('axe', true);
+                                    if (player.klasa != 'bowman') {
+                                        player.anims.play('axe', true);
+                                    }
+
+                                    if (player.klasa == 'bowman') {
+                                        player.anims.play('bow', true);
+                                        shootArrow(self, player, another);
+
+
+                                    }
+
                                     player.attacks = true;
                                     another.life -= 10;
                                     player.attackready = false;
@@ -502,14 +664,18 @@
 
                 //enemy atakują budynek
                 if (player) {
-                    if (player.type == 'enemy') {
+                    if (!player.attacks && player.stop) {
+                        player.stop = false;
+                    }
+
+                    if (player.type == 'enemy' && !player.stop) {
                         let building = self.children.getByName('building');
 
                         if (self.children.getByName('building')) {
                             if (player.type == 'enemy') {
                                 if (building.placed) {
                                     if (player) {
-                                        //  self.physics.moveToObject(player, building, 50);
+                                        // self.physics.moveToObject(player, building, 50);
                                     }
                                 }
                             }
@@ -517,8 +683,24 @@
                     }
                 }
 
+
+
             });
 
+        }
+
+        function shootArrow(gameinstance, player, another) {
+            let arrow = gameinstance.physics.add.sprite(player.x, player.y, 'arrow');
+            let angleradians = Phaser.Math.Angle.Between(player.x, player.y, another.x, another.y);
+            let angle = Phaser.Math.RadToDeg(angleradians + 90);
+            arrow.angle = angle;
+            gameinstance.physics.moveToObject(arrow, another, 300);
+            gameinstance.time.addEvent({
+                delay: 350,
+                callback: function () {
+                    arrow.destroy();
+                }
+            })
         }
 
         function goingDude(player) {
@@ -527,7 +709,13 @@
             const tolerance = 4;
             const distance = Phaser.Math.Distance.Between(player.x, player.y, target.x, target.y);
             if (player.attacks) {
-                player.anims.play('axe', true);
+                if (player.klasa != 'bowman') {
+                    player.anims.play('axe', true);
+                }
+
+                if (player.klasa == 'bowman') {
+                    player.anims.play('bow', true);
+                }
             } if (player.body.speed > 0) {
                 if (target.x > player.x) {
                     player.anims.play('right', true);
@@ -539,8 +727,16 @@
                     player.body.reset(target.x, target.y);
                 }
             } else {
-                if (!player.attacks && !player.wood && !player.gold) {
-                    player.anims.play('turn', true);
+                if (player.klasa != 'bowman') {
+                    if (!player.attacks && !player.wood && !player.gold) {
+                        player.anims.play('turn', true);
+                    }
+                }
+
+                if (player.klasa == 'bowman') {
+                    if (!player.attacks && !player.wood && !player.gold) {
+                        player.anims.play('bow', true);
+                    }
                 }
 
                 if (player.wood) {
@@ -559,8 +755,8 @@
 
 
         function addGoldMine(gameinstance) {
-            console.log(gameinstance);
             goldmine = gameinstance.physics.add.sprite(500, 500, 'goldmine').setScale(0.5);
+            goldmine.setInteractive();
 
 
         }
@@ -614,8 +810,22 @@
                 repeat: -1
             });
 
+            gameinstance.anims.create({
+                key: 'bow',
+                frames: [{ key: 'dude', frame: 14 }],
+                repeat: -1
+            });
+
 
         }
+
+        document.querySelector('#recruitdudebutton').addEventListener('click', function () {
+            addDude(gameinstance, 600, 200, 'player', 'dude');
+        });
+
+        document.querySelector('#recruitbowmanbutton').addEventListener('click', function () {
+            addDude(gameinstance, 400, 300, 'player', 'bowman');
+        });
 
 
 
@@ -631,6 +841,9 @@
 
 
     </script>
+
+
+
 
 
 </body>
