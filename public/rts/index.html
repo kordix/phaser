@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8" />
     <title>RTS</title>
-    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"
+        integrity="sha512-YQL0GVx/Too3vZjBl9plePRIYsRnd1s8N6QOvXPdZ+JMH2mtRTLQXGUDGjNW6zr1HUgcOIury67IvWe91oeEwQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style type="text/css">
         body {
             margin: 0;
@@ -24,6 +26,11 @@
         <button id="recruitdudebutton">Dude</button>
         <button id="recruitbowmanbutton">Bowman</button>
 
+    </div>
+
+
+    <div>
+        <!-- <img src="../assets/hammer.png" alt=""> -->
     </div>
 
 
@@ -58,15 +65,15 @@
         var players;
         let trees;
         var enemies;
-        // var target;
+        let shiftbool;
         var vectors = [];
         var stars;
         var bombs;
         var cursors = [];
-        var score = 0;
         var gameOver = false;
         var scoreText;
         var buildmode = 0;
+        let firstclick = false;
         var statics;
 
         var rectangle;
@@ -75,8 +82,10 @@
 
         let addeddudes = 1;
 
-        let gold = 150;
+        let gold = 300;
         let wood = 100;
+
+        let score = 0;
 
         let goldmine;
         let buildings;
@@ -90,157 +99,44 @@
         let gameinstance;
 
         function preload() {
-            this.load.image('background', 'assets/background.png');
-            this.load.image('cursor', 'assets/cursor2.png');
-            this.load.image('building', 'assets/base1.png');
-            this.load.image('hammer', 'assets/hammer.png');
-            this.load.image('grass', 'assets/grass.png');
-            this.load.image('tree', 'assets/chojka.png');
-            this.load.image('goldmine', 'assets/goldmine.png');
-            this.load.image('goldmine2', 'assets/goldmine2.png');
-            this.load.image('arrow', 'assets/arrow.png');
+            this.load.image('background', '../assets/background.png');
+            this.load.image('cursor', '../assets/cursor2.png');
+            this.load.image('building', '../assets/base1.png');
+            this.load.image('grass', '../assets/grass.png');
+            this.load.image('hammer', '../assets/hammer.png');
+            this.load.image('tree', '../assets/chojka.png');
+            this.load.image('goldmine', '../assets/goldmine.png');
+            this.load.image('goldmine2', '../assets/goldmine2.png');
+            this.load.image('arrow', '../assets/arrow.png');
 
 
 
 
 
 
-            this.load.spritesheet('dude', 'assets/dudeaxe.png', { frameWidth: 32, frameHeight: 48 });
+            this.load.spritesheet('dude', '../assets/dudeaxe.png', { frameWidth: 32, frameHeight: 48 });
 
-        }
-
-
-
-        function addDude(gameinstance, x, y, type, klasa) {
-            let cost = 20;
-            let attackrange = 50;
-            if (klasa == 'bowman') {
-                cost = 50;
-                attackrange = 120;
-            }
-
-            if (type == 'player') {
-                if (gold < cost) {
-                    return;
-                }
-            }
-
-
-            if (!x) {
-                x = Math.random() * 500;
-                y = Math.random() * 500
-            }
-
-
-            var player = players.create(x, y, 'dude');
-            player.life = 50;
-            player.cost = cost;
-            player.klasa = klasa;
-            player.attackrange = attackrange;
-
-
-
-            if (type == 'player') {
-                gold -= player.cost;
-            }
-            player.attackready = true;
-
-
-            player.body.setBounce(0);
-            player.setBounce(0);
-            if (type) {
-                player.type = type;
-            }
-
-            if (player.type == 'enemy') {
-                player.setTint('0xff0000');
-            }
-
-
-
-
-
-            gameinstance.physics.add.existing(player);
-            player.setBounce(0);
-            player.setInteractive();
-            player.setCollideWorldBounds(true);
-            player.depth = 2;
-
-            var vectorWithId = {
-                vector: new Phaser.Math.Vector2(),
-                dudeid: dudeid
-            };
-
-            var cursorWithId = {
-                cursor: gameinstance.add.image(player.x, player.y, 'cursor'),
-                dudeid: dudeid
-            }
-
-            cursorWithId.cursor.depth = 1;
-
-            vectors.push(vectorWithId);
-            cursors.push(cursorWithId);
-
-            player.clicked = false;
-            player.dudeid = dudeid;
-            player.attacks = false;
-            dudeid++;
-
-
-            player.on('pointerdown', () => {
-                console.log('playerointerdown');
-                if (!player.clicked) {
-                    player.tint = '0x00ff00';
-                    declick();
-                    player.clicked = true;
-
-                    if (player.type != 'enemy') {
-                        buildicon.setVisible(true);
-                    }
-                } else {
-                    player.tint = '0xffffff';
-                    player.clicked = false;
-                    buildicon.setVisible(false);
-                }
-
-            })
-
-
-
-        }
-
-
-
-
-        function addTree(x, y) {
-            let tree = trees.create(x, y, 'tree');
-            tree.body.immovable = true;
-            tree.life = 50;
-
-            tree.setInteractive();
-
-            tree.on('pointerdown',function(){
-                console.log(tree);
-            })
         }
 
         function create() {
+            let self = this;
+
             gameinstance = this;
 
-
-
-
-
-
-
             this.add.tileSprite(0, 0, game.config.width, game.config.height, 'grass').setOrigin(0);
+            this.input.mouse.disableContextMenu();
 
             gameovertext = this.add.text(400, 300, '', { font: '16px Courier', fill: '#00ff00' });
-            let self = this;
-            this.input.mouse.disableContextMenu();
             this.pointertext = this.add.text(10, 30, '', { font: '16px Courier', fill: '#00ff00' });
             this.goldtext = this.add.text(10, 10, 'Złoto:' + gold, { font: '16px Courier', fill: '#ffff00' });
             this.woodtext = this.add.text(100, 10, 'Drewno:' + wood, { font: '16px Courier', fill: '#FFaa00' });
+            this.scoretext = this.add.text(250, 10, 'Wynik:' + wood, { font: '16px Courier', fill: '#eeeeee' });
+
+
+            addBuildIcon(this);
+            addBuildIcon2(this);
+
+
 
 
 
@@ -248,90 +144,36 @@
                 self.pointertext.setText('pozycja:' + pointer.x + ' ' + pointer.y);
             })
 
-            buildicon = this.add.image(760, 570, 'hammer').setScale(0.5);
-            buildicon.setVisible(false);
-            buildicon.setInteractive();
-
-            buildicon.on('pointerover', (pointer) => {
-                self.pointertext.setText(pointer.x);
-                buildicon.setTint(0xffffff);
-                buildicon.setAlpha(0.8);
-            })
-
-            buildicon.on('pointerout', (pointer) => {
-                buildicon.setTint(0xffffff);
-                buildicon.setAlpha(1);
-            })
-
-            buildings = this.physics.add.group();
-            trees = this.physics.add.group();
-
-            //tryb budowy
-            buildicon.on('pointerdown', (pointer) => {
-
-                buildmode = 1;
-                ghostbuilding = this.add.sprite(pointer.x, pointer.y, 'building');
-                ghostbuilding.setAlpha(0.3);
-
-                //anulacja buildmode na prawy klik
-                self.input.once('pointerdown', (pointer) => {
-                    if (buildmode) {
-                        if (pointer.rightButtonDown()) {
-                            buildmode = false;
-                            building.destroy();
-                            return;
-                        }
-                    }
-
-
-                })
-
-                //stawianie budynku
-                if (buildmode) {
-                    self.input.once('pointerdown', function (pointer, gameObjects) {
-                        building.placed = true;
-
-                        buildmode = 0;
-
-                        self.time.addEvent({
-                            delay: 3000,
-                            loop: true,
-                            callback: function () {
-                                building.ready = 1;
-                                building.setAlpha(1);
-
-
-                            }
-                        })
-
-                    });
-
-                }
-
-
-                //wchodzą przeciwcniy
-
-
-
-            })
-
 
             players = this.physics.add.group();
+            buildings = gameinstance.physics.add.group();
 
             this.physics.world.setBounds(0, 0, 800, 600);
             this.physics.world.gravity.y = 0;
+
+            this.input.on('pointermove', (pointer) => {
+                if (ghostbuilding) {
+                    ghostbuilding.x = pointer.x;
+                    ghostbuilding.y = pointer.y;
+                }
+
+            })
 
 
 
             //go command
             this.input.on('pointerdown', (pointer, gameobject) => {
 
-                const inputManager = this.input.manager;
-
-                if(inputManager.hitTest(pointer, players.getChildren(), self.cameras.main).length){
+                if (buildmode) {
                     return;
                 }
 
+                if (gameobject.length) {
+                    return;
+                }
+
+
+                const inputManager = this.input.manager;
 
                 if (!buildmode) {
                     players.children.iterate((player) => {
@@ -364,8 +206,9 @@
 
             });
 
-            addDude(this, 600, 200, 'player', 'bowman');
-            addDude(this, 600, 201, 'player', 'bowman');
+
+
+            // addDude(this, 600, 200, 'player', 'bowman');
 
             addDude(this, 400, 100, 'enemy');
 
@@ -385,9 +228,6 @@
                     }
 
                     wave++;
-                    // addDude(self, 500 + Math.random() * 200, Math.random() * 200, 'enemy');
-                    // addDude(self, 500 + Math.random() * 200, Math.random() * 200, 'enemy');
-                    // addTree(Math.random() * 700, 100 + Math.random() * 500);
 
                 }
             })
@@ -396,135 +236,22 @@
             this.physics.add.collider(players, trees)
 
             addGoldMine(this);
-            addBuilding(this);
+            addBuilding(this, 100, 500);
 
-            createAnimations(this);
-
-            // let playerscollider = this.physics.add.collider(players, players, handleCollision, null, this);
-
-            this.physics.overlap(players, handleCollision, null, this);
-            // playerscollider.overlapOnly = true;
-
-        }
-
-        function handleCollision(object1, object2) {
-            // this function gets called when the objects collide
-            // you can add your custom logic to handle the collision here
-            // for example, you can prevent the objects from overlapping each other
-            // without applying any physics force to push them apart
-
-            // get the overlapping area between the objects
-            var overlap = new Phaser.Geom.Rectangle();
-            Phaser.Geom.Rectangle.Intersection(object1.getBounds(), object2.getBounds(), overlap);
-
-            // adjust the position of the objects to prevent them from overlapping
-            if (overlap.width > 0 && overlap.height > 0) {
-                if (object1.x < object2.x) {
-                    object1.x -= overlap.width / 2;
-                    object2.x += overlap.width / 2;
-                } else {
-                    object1.x += overlap.width / 2;
-                    object2.x -= overlap.width / 2;
-                }
-
-                if (object1.y < object2.y) {
-                    object1.y -= overlap.height / 2;
-                    object2.y += overlap.height / 2;
-                } else {
-                    object1.y += overlap.height / 2;
-                    object2.y -= overlap.height / 2;
-                }
-            }
-        }
-
-        function declick() {
-
-            const playerSprite = Phaser.Actions.GetFirst(players.getChildren(), { clicked: true });
-
-            if (playerSprite) {
-                playerSprite.clicked = false;
-                playerSprite.tint = '0xffffff';
-            }
-        }
-
-
-
-
-        function addBuilding(gameinstance) {
-            self = gameinstance;
-            building = buildings.create(100, 500, 'building');
-            building.placed = true;
-            building.ready = true;
-            building.life = 300;
-            building.setInteractive();
-            building.setScale(0.8);
-            building.setName('building')
-            // building.bounce = 0;
-            building.body.immovable = 1;
-
-            let collider = self.physics.add.collider(players, buildings, attackbase, null, self);
-            collider.bounce = 0;
-
-
-            //funkcjonalność budynku
-            building.on('pointerdown', function (pointer) {
-
-                console.log('building ointer down');
-
-                document.querySelector('#rekrutacjamenu').style.opacity = 1;
-
-                // if (building.ready) {
-                //     addDude(self, building.x + 100, building.y + 100 - (50 * (addeddudes % 4)), 'player');
-                //     addeddudes += 1;
-                // }
+            goldmine.on('pointerdown', () => {
             })
 
-        }
-
-
-        function attackbase(dude, building) {
-
-            if (dude.type == 'enemy') {
-                dude.x += 20;
-
-
-                building.life -= 20;
-                if (building.life < 0) {
-                    building.x = 1000;
-
-
-
-                    gameovertext.setText('GAME OVER');
-
-
-
-                }
-            }
-
-            if (dude.type == 'player') {
-                if (building.life < 300) {
-                    building.life += 20;
-                    gold -= 10;
-                }
-            }
-
-            building.setAlpha(building.life / 300);
+            createAnimations(this);
         }
 
         function update() {
 
             this.goldtext.setText('Złoto:' + gold);
-            this.woodtext.setText('Drewno::' + wood);
+            this.woodtext.setText('Drewno:' + wood);
+            this.scoretext.setText('Wynik:' + score);
+
 
             let self = this;
-            let inputManager = this.input.manager;
-
-            // Check for collision between the player sprite and any enemy sprites
-            const collidingEnemies = players.getChildren().filter(player => {
-                //   console.log(inputManager.hitTest(goldmine, player, self.cameras.main));
-                return inputManager.hitTest(player, goldmine, self.cameras.main);
-
-            });
 
             buildicon.on('pointerup', (pointer) => {
                 buildicon.setTint(0xffffff);
@@ -540,10 +267,11 @@
 
             players.children.each(function (player) {
 
-                player.attacks = false;
-                if (player.life <= 0) {
-                    player.x = 1000;
+                if (player.dead) {
+                    return;
                 }
+
+                player.attacks = false;
 
                 //drzewa są zbierane
                 if (player.type == 'player') {
@@ -577,9 +305,8 @@
                 }
 
                 //złoto jest zbierane
-
                 if (player.type == 'player') {
-                    if (Math.abs(player.x - goldmine.x) < 100 && Math.abs(player.y - goldmine.y) < 100) {
+                    if (Math.abs(player.x - goldmine.x) < 120 && Math.abs(player.y - goldmine.y) < 120) {
                         if (player.body.velocity.x == 0) {
                             if (!player.gold) {
                                 goldmine.setTexture('goldmine2');
@@ -623,7 +350,13 @@
 
                 //players atakują each other
                 players.children.each((another) => {
+
+                    if (another.dead) {
+                        return;
+                    }
+
                     if (player.type != another.type) {
+
                         if (Math.abs(another.x - player.x) < player.attackrange && Math.abs(another.y - player.y) < player.attackrange) {
                             player.attacks = true;
 
@@ -650,6 +383,30 @@
 
                                     player.attacks = true;
                                     another.life -= 10;
+
+                                    if (another.life <= 0) {
+
+                                        another.dead = true;
+
+                                        if (another.type == 'enemy') {
+                                            score += 10;
+                                            another.x = 0;
+                                            another.y = 0;
+                                            another.setVisible(false);
+                                        }
+
+
+                                        if (another.type == 'player') {
+                                            another.x = 1000;
+                                            another.y = 600;
+                                        }
+                                    }
+
+
+
+
+
+
                                     player.attackready = false;
 
                                     setTimeout(() => {
@@ -687,6 +444,280 @@
 
             });
 
+        }
+
+        function addDude(gameinstance, x, y, type, klasa) {
+            let cost = 20;
+            let attackrange = 50;
+            if (klasa == 'bowman') {
+                cost = 50;
+                attackrange = 120;
+            }
+
+            if (type == 'player') {
+                if (gold < cost) {
+                    return;
+                }
+            }
+
+
+            if (!x) {
+                x = Math.random() * 500;
+                y = Math.random() * 500
+            }
+
+
+            var player = players.create(x, y, 'dude');
+            player.life = 50;
+            player.cost = cost;
+            player.klasa = klasa;
+            player.attackrange = attackrange;
+            player.dead = false;
+
+
+
+            if (type == 'player') {
+                gold -= player.cost;
+            }
+            player.attackready = true;
+
+
+            player.body.setBounce(0);
+            player.setBounce(0);
+            if (type) {
+                player.type = type;
+            }
+
+            if (player.type == 'enemy') {
+                player.setTint('0xff0000');
+            }
+
+            gameinstance.physics.add.existing(player);
+            player.setBounce(0);
+            // player.setInteractive();
+
+            player.setInteractive({
+                cursor: 'url(Move.cur)'
+            });
+            player.setCollideWorldBounds(true);
+            player.depth = 2;
+
+            var vectorWithId = {
+                vector: new Phaser.Math.Vector2(),
+                dudeid: dudeid
+            };
+
+            var cursorWithId = {
+                cursor: gameinstance.add.image(player.x, player.y, 'cursor'),
+                dudeid: dudeid
+            }
+
+            cursorWithId.cursor.depth = 1;
+
+            vectors.push(vectorWithId);
+            cursors.push(cursorWithId);
+
+            player.clicked = false;
+            player.dudeid = dudeid;
+            player.attacks = false;
+            dudeid++;
+
+            player.on('pointerdown', () => {
+                if (player.dead) {
+                    return;
+                }
+                if (!player.clicked) {
+                    player.tint = '0x00ff00';
+                    //   declick();
+                    player.clicked = true;
+
+                    if (player.type != 'enemy') {
+                        buildicon.setVisible(true);
+                    }
+                } else {
+                    player.tint = '0xffffff';
+                    player.clicked = false;
+                    buildicon.setVisible(false);
+                }
+
+            })
+
+
+
+        }
+
+        function addTree(x, y) {
+            let tree = trees.create(x, y, 'tree');
+            tree.body.immovable = true;
+            tree.life = 50;
+
+            tree.setInteractive();
+
+        }
+
+        let buildEventListener;
+
+        function addBuildIcon2(gameinstance) {
+            const buildIcon = gameinstance.add.image(100, 100, 'hammer').setScale(0.5);
+
+            buildIcon.setInteractive();
+            buildIcon.on('pointerdown', (event) => {
+                console.log(event.event);
+                event.event.stopPropagation();
+                console.log('THIS SHOULD HAPPEN ON FIRST CLICK');
+                buildMode = true;
+                if (buildEventListener) {
+                    buildEventListener.off('pointerdown');
+                }
+                buildEventListener = gameinstance.input.on('pointerdown', (pointer) => {
+                    if (buildMode) {
+                        console.log('THIS HOSULD HAPPEN ON ANOTHER');
+                        buildMode = false;
+                        buildEventListener.off('pointerdown');
+                    }
+                });
+            });
+        }
+
+        function addBuildIcon(gameinstance) {
+            buildicon = gameinstance.add.image(760, 570, 'hammer').setScale(0.5);
+            buildicon.setVisible(false);
+            buildicon.setInteractive();
+
+            buildicon.on('pointerover', (pointer) => {
+                self.pointertext.setText(pointer.x);
+                buildicon.setTint(0xffffff);
+                buildicon.setAlpha(0.8);
+            })
+
+            buildicon.on('pointerout', (pointer) => {
+                buildicon.setTint(0xffffff);
+                buildicon.setAlpha(1);
+            })
+
+            //tryb budowy
+            buildicon.on('pointerdown', (pointer) => {
+                if (!buildmode) {
+                    ghostbuilding = gameinstance.add.sprite(pointer.x, pointer.y, 'building');
+                    ghostbuilding.setAlpha(0.3);
+                    ghostbuilding.setScale(0.8);
+                    // firstclick = true;
+
+                    setTimeout(() => {
+                        buildmode = true;
+                    }, 200)
+
+                }
+
+                //anulacja buildmode na prawy klik
+
+                gameinstance.input.on('pointerdown', (pointer) => {
+                    if (buildmode) {
+                        console.log('pointerdwon w buliding pointerdown');
+
+                        if (pointer.rightButtonDown()) {
+                            buildmode = false;
+                            ghostbuilding.destroy();
+                            return;
+                        }
+
+
+                    }
+                })
+
+                //stawianie budynku
+
+                gameinstance.input.on('pointerdown', function (pointer, gameObjects) {
+                    console.log('buildmode', buildmode);
+                    if (buildmode) {
+
+                        addBuilding(gameinstance, pointer.x, pointer.y);
+                        buildmode = false;
+                        ghostbuilding.destroy();
+
+                        gameinstance.time.addEvent({
+                            delay: 3000,
+                            loop: true,
+                            callback: function () {
+                                console.log('BĘDIZE POSTWIENIE BYDN');
+                                // building.ready = 1;
+                                // building.setAlpha(1);
+
+
+                            }
+                        })
+                    }
+
+                });
+
+            })
+        }
+
+        function declick() {
+
+            const playerSprite = Phaser.Actions.GetFirst(players.getChildren(), { clicked: true });
+
+            if (playerSprite) {
+                playerSprite.clicked = false;
+                playerSprite.tint = '0xffffff';
+            }
+        }
+
+        function addBuilding(gameinstance, x, y) {
+            self = gameinstance;
+            building = buildings.create(x, y, 'building');
+            building.placed = true;
+            building.ready = true;
+            building.life = 300;
+            building.setInteractive();
+            building.setScale(0.8);
+            building.setName('building')
+            // building.bounce = 0;
+            building.body.immovable = 1;
+
+            let collider = self.physics.add.collider(players, buildings, attackbase, null, self);
+            collider.bounce = 0;
+
+
+            //funkcjonalność budynku
+            building.on('pointerdown', function (pointer) {
+                document.querySelector('#rekrutacjamenu').style.opacity = 1;
+
+                // if (building.ready) {
+                //     addDude(self, building.x + 100, building.y + 100 - (50 * (addeddudes % 4)), 'player');
+                //     addeddudes += 1;
+                // }
+            })
+
+        }
+
+        function attackbase(dude, building) {
+
+            if (dude.type == 'enemy') {
+                dude.x += 20;
+
+
+                building.life -= 20;
+                if (building.life < 0) {
+                    building.x = 1000;
+
+
+
+                    gameovertext.setText('GAME OVER');
+
+
+
+                }
+            }
+
+            if (dude.type == 'player') {
+                if (building.life < 300) {
+                    building.life += 20;
+                    gold -= 10;
+                }
+            }
+
+            building.setAlpha(building.life / 300);
         }
 
         function shootArrow(gameinstance, player, another) {
@@ -752,17 +783,15 @@
 
         }
 
-
-
         function addGoldMine(gameinstance) {
             goldmine = gameinstance.physics.add.sprite(500, 500, 'goldmine').setScale(0.5);
             goldmine.setInteractive();
+            goldmine.on('pointerdown', function () {
+
+            })
 
 
         }
-
-
-
 
         function createAnimations(gameinstance) {
             gameinstance.anims.create({
@@ -820,11 +849,11 @@
         }
 
         document.querySelector('#recruitdudebutton').addEventListener('click', function () {
-            addDude(gameinstance, 600, 200, 'player', 'dude');
+            addDude(gameinstance, 200, 600 - ((dudeid % 5) * 30), 'player', 'dude');
         });
 
         document.querySelector('#recruitbowmanbutton').addEventListener('click', function () {
-            addDude(gameinstance, 400, 300, 'player', 'bowman');
+            addDude(gameinstance, 200, 600 - ((dudeid % 5) * 30), 'player', 'bowman');
         });
 
 
