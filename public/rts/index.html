@@ -134,10 +134,6 @@
 
 
             addBuildIcon(this);
-            addBuildIcon2(this);
-
-
-
 
 
             self.input.on('pointermove', (pointer) => {
@@ -523,6 +519,7 @@
             dudeid++;
 
             player.on('pointerdown', () => {
+                console.log('plauerclicked', player.clicked);
                 if (player.dead) {
                     return;
                 }
@@ -557,28 +554,6 @@
 
         let buildEventListener;
 
-        function addBuildIcon2(gameinstance) {
-            const buildIcon = gameinstance.add.image(100, 100, 'hammer').setScale(0.5);
-
-            buildIcon.setInteractive();
-            buildIcon.on('pointerdown', (event) => {
-                console.log(event.event);
-                event.event.stopPropagation();
-                console.log('THIS SHOULD HAPPEN ON FIRST CLICK');
-                buildMode = true;
-                if (buildEventListener) {
-                    buildEventListener.off('pointerdown');
-                }
-                buildEventListener = gameinstance.input.on('pointerdown', (pointer) => {
-                    if (buildMode) {
-                        console.log('THIS HOSULD HAPPEN ON ANOTHER');
-                        buildMode = false;
-                        buildEventListener.off('pointerdown');
-                    }
-                });
-            });
-        }
-
         function addBuildIcon(gameinstance) {
             buildicon = gameinstance.add.image(760, 570, 'hammer').setScale(0.5);
             buildicon.setVisible(false);
@@ -602,7 +577,7 @@
                     ghostbuilding.setAlpha(0.3);
                     ghostbuilding.setScale(0.8);
                     // firstclick = true;
-
+                    buildmode = false;
                     setTimeout(() => {
                         buildmode = true;
                     }, 200)
@@ -649,6 +624,8 @@
                     }
 
                 });
+
+
 
             })
         }
