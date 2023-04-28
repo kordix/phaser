@@ -1,5 +1,4 @@
-let myexport = function goCommand(gameinstance) {
-    //go command
+function goCommand(gameinstance) {
     gameinstance.input.on('pointerdown', (pointer, gameobject) => {
 
         if (buildmode) {
@@ -10,33 +9,43 @@ let myexport = function goCommand(gameinstance) {
             return;
         }
 
-
-        const inputManager = this.input.manager;
-
         if (!buildmode) {
             players.children.iterate((player) => {
 
-                if (pointer.rightButtonDown()) {
-                    player.clicked = false;
-                    player.tint = '0xffffff';
-                    if (player.type == 'enemy') {
-                        player.tint = '0xff0000';
+                if (!player.dead) {
+                    console.log(player.dead);
+
+                    if (pointer.rightButtonDown()) {
+                        player.clicked = false;
+                        player.tint = '0xffffff';
+                        if (player.type == 'enemy') {
+                            player.tint = '0xff0000';
+                        }
+
+                        document.querySelector('#budowaniemenu').style.opacity = 0;
+                        gameinstance.messagetext.setText('');
+
+                        gameinstance.dudestatstext.setVisible(false);
+
+
                     }
-                    buildicon.setVisible(false);
+                    if (player.clicked) {
 
-                }
-                if (player.clicked) {
+                        if (!(pointer.x > 700 && pointer.y > 530)) {
+                            let target = vectors.find((el) => el.dudeid == player.dudeid).vector;
+                            let cursor = cursors.find((el) => el.dudeid == player.dudeid).cursor;
+                            target.x = pointer.worldX;
+                            target.y = pointer.worldY;
+                            cursor.x = pointer.worldX;
+                            cursor.y = pointer.worldY;
 
-                    if (!(pointer.x > 700 && pointer.y > 530)) {
-                        let target = vectors.find((el) => el.dudeid == player.dudeid).vector;
-                        let cursor = cursors.find((el) => el.dudeid == player.dudeid).cursor;
-                        target.x = pointer.x;
-                        target.y = pointer.y;
-                        cursor.x = pointer.x;
-                        cursor.y = pointer.y;
+                            // let vector = vectors.find((el) => el.dudeid == player.dudeid);
+                            gameinstance.physics.moveToObject(player, target, player.speed);
 
-                        // let vector = vectors.find((el) => el.dudeid == player.dudeid);
-                        gameinstance.physics.moveToObject(player, target, 150);
+                            setInterval(() => {
+                                // gameinstance.physics.moveToObject(player, target, player.speed);
+                            }, 1000)
+                        }
                     }
                 }
             })
@@ -45,5 +54,3 @@ let myexport = function goCommand(gameinstance) {
     });
 
 }
-
-export default myexport;
