@@ -1,7 +1,7 @@
 function enemyWave(gameinstance) {
 
     gameinstance.time.addEvent({
-        delay: 15000,
+        delay: 10000,
         loop: true,
         callback: function () {
 

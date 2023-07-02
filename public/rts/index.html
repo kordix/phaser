@@ -57,6 +57,15 @@
 
     </div>
 
+    <p>To do</p>
+    <ul>
+        <li>punkt zbiórki</li>
+        <li>players nie nachodzą na siebie</li>
+        <li>tarczownik</li>
+        <li>obszarnik</li>
+        <li>zbieranie drewna</li>
+    </ul>
+
 
     <script type="text/javascript">
 
@@ -179,31 +188,15 @@
             uilayer.add(this.dudestatstext);
             uilayer.add(this.messagetext);
 
-
-
-
-
-
-
-
-
-
             self.input.on('pointermove', (pointer) => {
                 self.pointertext.setText('pozycja:' + pointer.x + ' ' + pointer.y);
             })
-
-
-
 
             this.physics.world.setBounds(0, 0, 1600, 1200);
             this.cameras.main.setBounds(0, 0, 1600, 1200);
 
             this.cameras.main.centerX = 500;
             this.cameras.main.tint = '0x00ff00';
-
-
-
-
 
             this.physics.world.gravity.y = 0;
 
@@ -229,8 +222,8 @@
             addDude(this, 400, 100, 'enemy');
 
 
-            addTree(100, 300);
-            addTree(200, 300);
+            addTree(100, 100);
+            addTree(200, 200);
 
 
 
@@ -245,13 +238,21 @@
 
             // this.dupa = this.add.text(500, 10, 'Dupa:' + wood, { font: '16px Courier', fill: '#FFaa00' });
             // uilayer.add(this.dupa);
-
-
         }
 
-        let somelet = 'asdfsa';
-
         function update() {
+
+            players.children.each(function (player) {
+                if (player.dead) {
+                    player.destroy();
+                }
+            })
+
+            trees.children.each(function (tree) {
+                if (tree.dead) {
+                    tree.destroy();
+                }
+            })
 
 
             // vueapp.$root._data.test = 'pipa';

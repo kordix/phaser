@@ -296,7 +296,6 @@ document.getElementById('highscorediv').innerHTML = 'High score:'+localStorage.h
 
     form.addEventListener('submit', function (e) {
         e.preventDefault();
-        console.log('afsd');
         if (input.value) {
          //   socket.emit('chat message', input.value);
             input.value = '';
@@ -304,8 +303,6 @@ document.getElementById('highscorediv').innerHTML = 'High score:'+localStorage.h
     });
 
     socket.on('chat message', function (msg) {
-        console.log('afsdfdsf');
-        console.log(msg);
         var item = document.createElement('li');
         item.textContent = msg;
         messages.appendChild(item);

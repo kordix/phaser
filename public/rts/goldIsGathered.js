@@ -11,11 +11,7 @@ function goldIsGathered(player,goldmine,gameinstance){
                     player.setVisible(false);
                     
                     let vector = vectors.find((el) => el.dudeid == player.dudeid).vector;
-                   
-                   
-
-
-
+    
 
                     setTimeout(() => {
                         player.setVisible(true);

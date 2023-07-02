@@ -1,5 +1,7 @@
 function enemiesAttackBuilding(player) {
 
+
+
     if (player) {
         if (!player.attacks && player.stop) {
             player.stop = false;
@@ -9,7 +11,10 @@ function enemiesAttackBuilding(player) {
          
             let building = self.children.getByName('building');
 
+   
+
             if (self.children.getByName('building')) {
+       
                 if (player.type == 'enemy') {
                     if (building.placed) {
                         if (player) {
