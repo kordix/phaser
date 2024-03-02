@@ -22,8 +22,10 @@
 
     <div id="rekrutacjamenu" style="opacity:0">
         Rekrutuj:
-        <button id="recruitdudebutton">Dude</button>
-        <button id="recruitbowmanbutton">Bowman</button>
+        <button id="recruitdudebutton">Dude (20g)</button>
+        <button id="recruitbowmanbutton">Bowman (50g)</button>
+        <button id="recruitshieldmanbutton">Tarczownik (50g)</button>
+
     </div>
 
     <div id="budowaniemenu" style="opacity:0">
@@ -93,6 +95,7 @@
 
         var dudeid = 1;
         var players;
+        let shields;
         let trees;
         var enemies;
         let shiftbool;
@@ -153,7 +156,8 @@
             this.load.image('goldmine', '../assets/goldmine.png');
             this.load.image('goldmine2', '../assets/goldmine2.png');
             this.load.image('arrow', '../assets/arrow.png');
-            this.load.spritesheet('dude', '../assets/dudeaxe.png', { frameWidth: 32, frameHeight: 48 });
+            this.load.spritesheet('dude', '../assets/dudeaxenowe.png', { frameWidth: 32, frameHeight: 48 });
+            this.load.image('shield', '../assets/shield.png');
 
         }
 
@@ -201,6 +205,8 @@
             this.physics.world.gravity.y = 0;
 
             players = this.physics.add.group();
+            shields = this.physics.add.group();
+
             buildings = gameinstance.physics.add.group();
             trees = this.physics.add.group();
 
@@ -218,8 +224,6 @@
 
             //go command
             goCommand(this);
-
-            addDude(this, 400, 100, 'enemy');
 
 
             addTree(100, 100);
@@ -247,6 +251,7 @@
                     player.destroy();
                 }
             })
+
 
             trees.children.each(function (tree) {
                 if (tree.dead) {

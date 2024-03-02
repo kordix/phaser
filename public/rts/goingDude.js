@@ -13,7 +13,13 @@ function goingDude(player) {
         }
     } if (player.body.speed > 0) {
         if (target.x > player.x) {
-            player.anims.play('right', true);
+            
+            if(player.klasa == 'tarczownik'){
+                player.anims.play('rightshield',true);
+            } else {
+                player.anims.play('right', true);
+
+            }
         }
         if (target.x < player.x) {
             player.anims.play('left', true);
@@ -22,15 +28,25 @@ function goingDude(player) {
             player.body.reset(target.x, target.y);
         }
     } else {
-        if (player.klasa != 'bowman') {
+        if (player.klasa != 'bowman' && player.klasa != 'tarczownik') {
+            
             if (!player.attacks && !player.wood && !player.gold) {
                 player.anims.play('turn', true);
             }
+
+            
         }
 
         if (player.klasa == 'bowman') {
             if (!player.attacks && !player.wood && !player.gold) {
                 player.anims.play('bow', true);
+            }
+        }
+
+
+        if (player.klasa == 'tarczownik') {
+            if (!player.attacks && !player.wood && !player.gold) {
+                player.anims.play('turnshield', true);
             }
         }
 

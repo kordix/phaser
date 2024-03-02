@@ -6,8 +6,21 @@ function createAnimations(gameinstance) {
     });
 
     gameinstance.anims.create({
+        key: 'turnshield',
+        frames: [{ key: 'dude', frame: 19 }],
+        frameRate: 20
+    });
+
+    gameinstance.anims.create({
         key: 'right',
-        frames: gameinstance.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+        frames: gameinstance.anims.generateFrameNumbers('dude', { start:5  , end: 8 }),
+        frameRate: 5,
+        repeat: -1
+    });
+
+    gameinstance.anims.create({
+        key: 'rightshield',
+        frames: gameinstance.anims.generateFrameNumbers('dude', { start: 20, end: 23 }),
         frameRate: 5,
         repeat: -1
     });
@@ -20,8 +33,22 @@ function createAnimations(gameinstance) {
     });
 
     gameinstance.anims.create({
+        key: 'leftshield',
+        frames: gameinstance.anims.generateFrameNumbers('dude', { start: 15, end: 18 }),
+        frameRate: 5,
+        repeat: -1
+    });
+
+    gameinstance.anims.create({
         key: 'axe',
         frames: gameinstance.anims.generateFrameNumbers('dude', { start: 9, end: 11 }),
+        frameRate: 5,
+        repeat: -1
+    });
+
+    gameinstance.anims.create({
+        key: 'axeshield',
+        frames: gameinstance.anims.generateFrameNumbers('dude', { start: 23, end: 25 }),
         frameRate: 5,
         repeat: -1
     });

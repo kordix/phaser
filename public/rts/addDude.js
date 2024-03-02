@@ -13,6 +13,11 @@ function addDude(gameinstance, x, y, type, klasa) {
 
     }
 
+    if (klasa == 'tarczownik') {
+        cost = 50;
+    }
+
+
 
 
     if (type == 'player') {
@@ -45,6 +50,11 @@ function addDude(gameinstance, x, y, type, klasa) {
     if (player.klasa == 'bowman') {
         player.attackrange = stats.rangebowman;
         player.speed = 90;
+    }
+
+    if (player.klasa == 'tarczownik') {
+        player.speed = 100;
+        player.life = 120;
     }
 
 

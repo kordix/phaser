@@ -1,5 +1,5 @@
 function treesAreGathered(player, trees) {
-    if (player.type == 'player') {
+    if (player.type == 'player' && player.klasa == 'dude') {
         trees.children.each((tree) => {
             if (Math.abs(player.x - tree.x) < 80 && Math.abs(player.y - tree.y) < 80) {
                 tree.setTint(0xFF0000);

@@ -6,6 +6,11 @@ document.querySelector('#recruitbowmanbutton').addEventListener('click', functio
     addDude(gameinstance, 200, 600 - ((dudeid % 5) * 30), 'player', 'bowman');
 });
 
+document.querySelector('#recruitshieldmanbutton').addEventListener('click', function () {
+    addDude(gameinstance, 200, 600 - ((dudeid % 5) * 30), 'player', 'tarczownik');
+});
+
+
 document.querySelector('#buildtownhallbutton').addEventListener('click', function () {
     buildingToBuild = 'building';
     enterBuildMode(gameinstance);
