@@ -14,17 +14,19 @@
 <body>
 
 
-    <button id="enemyshootbutton">Enemyshoot</button>
-
-
+    <button onclick="enemiesShoot()">Enemyshoot</button>
+    <button onclick="enemiesJump()">jump</button>
 
     <script>
         let cursors;
         let player;
         let bullets;
         let enemy;
-        
+        let enemies;
+
         let enemybullets;
+
+        let life = 100;
 
         let platforms;
         let config = {
@@ -62,13 +64,22 @@
 
 
         function create() {
+           
+
+
             this.add.image(400, 300, 'sky');
+             let uilayer = this.add.container(0, 0);
+            this.lifetext = this.add.text(10, 10, 'Life:', { font: '16px Courier', fill: '#00ff00' });
+            uilayer.add(this.lifetext);
+
+
             platforms = this.physics.add.staticGroup();
             platforms.create(300, 300, 'platform');
 
 
             bullets = this.physics.add.group();
             enemybullets = this.physics.add.group();
+            enemies = this.physics.add.group();
 
 
 
@@ -87,13 +98,15 @@
             enemy.active = true;
 
             let collider = this.physics.add.collider(bullets, enemy, attack, null, this);
+            let collider3 = this.physics.add.collider(bullets, enemies, attack2, null, this);
+
             let collider2 = this.physics.add.collider(enemybullets, player, enemyattack, null, this);
 
             collider.bounce = 0;
 
             this.physics.add.collider(player, platforms);
             this.physics.add.collider(enemy, platforms);
-             this.physics.world.setBounds(0, 0, 800, 600);
+            this.physics.world.setBounds(0, 0, 800, 600);
 
             cursors = this.input.keyboard.createCursorKeys();
 
@@ -118,27 +131,39 @@
 
             var timedEvent = this.time.addEvent({
                 delay: 900,
-                callback: enemyShoot,
+                callback: enemiesShoot,
                 callbackScope: this,
                 loop: true
             });
 
-               var timedEvent2 = this.time.addEvent({
+            var timedEvent2 = this.time.addEvent({
                 delay: 2000,
-                callback: enemyJump,
+                callback: enemiesJump,
                 callbackScope: this,
                 loop: true
             });
 
+             var timedEvent3 = this.time.addEvent({
+                delay: 4000,
+                callback:  addEnemy(400,400),
+                callbackScope: this,
+                loop: true
+            });
+
+           
 
 
 
 
-          
+
+
 
         }
 
         function update() {
+
+            this.lifetext.setText('Życie:' + player.life);
+
 
 
             var keyboard = this.input.keyboard;
@@ -172,7 +197,7 @@
                 enemy.anims.play('turn');
             }
 
-            if(keyboard.addKey('W').isDown){
+            if (keyboard.addKey('W').isDown) {
                 enemy.setVelocityY(-300);
             }
 
@@ -220,36 +245,74 @@
         }
 
 
-        
+
 
         function enemyShoot(gameinstance) {
-            if(enemy.active){
-            let bullet = enemybullets.create(enemy.x, enemy.y, 'bullet');
-            bullet.body.setAllowGravity(false);
-            bullet.body.setBounce(0);
-            bullet.setScale(0.15);
+            if (enemy.active) {
+                let bullet = enemybullets.create(enemy.x, enemy.y, 'bullet');
+                bullet.body.setAllowGravity(false);
+                bullet.body.setBounce(0);
+                bullet.setScale(0.15);
 
-            bullet.setVelocityX(-1000);
+                bullet.setVelocityX(-1000);
             }
         }
 
+        function enemiesShoot(gameinstance) {
+            enemies.children.each(function (enemy) {
+                if(enemy.active){
+                    let bullet = enemybullets.create(enemy.x, enemy.y, 'bullet');
+                    bullet.body.setAllowGravity(false);
+                    bullet.body.setBounce(0);
+                    bullet.setScale(0.15);
+
+                    bullet.setVelocityX(-1000);
+                }
+            })
+
+        }
+
         function attack(enemy, bullet) {
+            console.log(enemy,bullet);
+            console.log('ENEMYLIFE',enemy.life);
             enemy.setTint(0xffff00);
             bullet.setVelocityX(0);
             bullet.body.setVelocity(0, 0);
             enemy.body.setVelocity(0, 0);
             enemy.life -= 10;
 
+
             bullet.destroy();
 
             if (enemy.life <= 0) {
                 enemy.setVisible(false);
                 enemy.x = 2000;
-                enemy.y= 1000;
+                enemy.y = 1000;
                 enemy.active = false;
             }
 
         }
+
+         function attack2(bullet, enemy) {
+                console.log(enemy, bullet);
+                console.log('ENEMYLIFE', enemy.life);
+                enemy.setTint(0xffff00);
+                bullet.setVelocityX(0);
+                bullet.body.setVelocity(0, 0);
+                enemy.body.setVelocity(0, 0);
+                enemy.life -= 10;
+
+
+                bullet.destroy();
+
+                if (enemy.life <= 0) {
+                    enemy.setVisible(false);
+                    enemy.x = 2000;
+                    enemy.y = 1000;
+                    enemy.active = false;
+                }
+
+            }
 
 
         function enemyattack(player, bullet) {
@@ -269,12 +332,19 @@
 
         }
 
-        function enemyJump(){
-            if(enemy.active){
+        function enemyJump() {
+            if (enemy.active) {
                 enemy.setVelocityY(-300);
             }
         }
 
+        function enemiesJump() {
+            enemies.children.each(function (enemy) {
+                if(enemy.active){
+                    enemy.setVelocityY(-300);
+                }
+            });
+        }
 
         function createAnimations(gameinstance) {
             gameinstance.anims.create({
@@ -299,11 +369,26 @@
 
         }
 
-            function updateCounter(){
-                console.log('counter');
-            }
+        function updateCounter() {
+            console.log('counter');
+        }
 
-                // game.time.events.loop(Phaser.Timer.SECOND * 2, enemyShoot, this);
+        function addEnemy(x, y) {
+            let enemy = enemies.create(x, y, 'dude');
+
+            enemy.setTint(0xff0000);
+            enemy.setCollideWorldBounds(true);
+            enemy.anims.play('turn');
+            enemy.life = 50;
+            enemy.active = true;
+            enemy.body.setBounce(0.7);
+
+
+            console.log(enemy);
+
+        }
+
+        // game.time.events.loop(Phaser.Timer.SECOND * 2, enemyShoot, this);
 
 
 

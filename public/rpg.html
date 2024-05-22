@@ -1,6 +1,7 @@
-<!doctype html> 
-<html lang="en"> 
-<head> 
+<!doctype html>
+<html lang="en">
+
+<head>
     <meta charset="UTF-8" />
     <title>TITLE</title>
     <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
@@ -10,6 +11,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <ul id="messages"></ul>
@@ -21,145 +23,239 @@
     <div id="highscorediv"></div>
 
 
+    <button id="shootbutton">shoot</button>
 
-<script type="text/javascript">
 
-var config = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    physics: {
-        default: 'arcade',
-        arcade: {
-            gravity: false,
-            debug: false
+
+    <script type="text/javascript">
+
+        var config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: false,
+                    debug: false
+                }
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            }
+        };
+
+        var player;
+        var player2;
+
+        var stars;
+        var bombs;
+        var cursors;
+        var score = 0;
+        var gameOver = false;
+        var scoreText;
+
+        let bullets;
+
+        let platforms;
+
+        let enemies;
+
+        var game = new Phaser.Game(config);
+
+        function preload() {
+            this.load.image('background', 'assets/grass.png');
+            this.load.image('bullet', 'assets/bullet.png');
+
+            this.load.image('ground', 'assets/platform.png');
+
+
+            this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+
         }
-    },
-    scene: {
-        preload: preload,
-        create: create,
-        update: update
-    }
-};
 
-var player;
-    var player2;
+        function create() {
+            //  A simple background for our game
+            // this.add.image(400, 300, 'background');
 
-var stars;
-var bombs;
-var cursors;
-var score = 0;
-var gameOver = false;
-var scoreText;
+            var tileSprite = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'background');
+            // 'tiles' to nazwa tekstury, która zawiera tileset
+            // game.config.width i game.config.height to szerokość i wysokość ekranu
 
-var game = new Phaser.Game(config);
+            tileSprite.setOrigin(0); // Ustawienie pochodzenia na lewym górnym rogu
 
-function preload ()
-{
-    this.load.image('background', 'assets/background.png');
-    this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+            player = this.physics.add.sprite(100, 450, 'dude');
+            this.physics.world.setBounds(0, 0, 1600, 600);
+            this.physics.world.gravity.y = 0;
 
-}
+            player.setCollideWorldBounds(true);
+            player.setInteractive();
 
-function create ()
-{
-    //  A simple background for our game
-    this.add.image(400, 300, 'background');
-    //  Now let's create some ledges
+            bullets = this.physics.add.group();
+            enemies = this.physics.add.group();
 
-    player = this.physics.add.sprite(100, 450, 'dude');
-     this.physics.world.setBounds(0, 0, 1600, 600);
-     this.physics.world.gravity.y = 0;
+            platforms = this.physics.add.staticGroup();
 
-    player.setCollideWorldBounds(true);
-    player.setInteractive();
+            platforms.create(500, 568, 'ground').setScale(3).refreshBody();
+
+            this.physics.add.collider(player, platforms);
 
 
-    this.anims.create({
-        key: 'left',
-        frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
-        frameRate: 10,
-        repeat: -1
-    });
-
-    this.anims.create({
-        key: 'turn',
-        frames: [ { key: 'dude', frame: 4 } ],
-        frameRate: 20
-    });
-
-    this.anims.create({
-        key: 'right',
-        frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
-        frameRate: 10,
-        repeat: -1
-    });
-
-    cursors = this.input.keyboard.createCursorKeys();
-}
-
-function update ()
-{
-    var keyboard = this.input.keyboard;
-
-    if (cursors.left.isDown)
-    {
-        player.setVelocityX(-160);
-        player.anims.play('left', true);
-
-    }
-    else if (cursors.right.isDown)
-    {
-        player.setVelocityX(160);
-        player.anims.play('right', true);
-
-    }
-    else
-    {
-        player.setVelocityX(0);
-        // player.anims.play('turn');
-    }
 
 
-    if (cursors.up.isDown){
-         player.setVelocityY(-300);
-    } else
-
-       if (cursors.down.isDown) {
-        player.setVelocityY(200);
-    } else
-
-       if (cursors.up.isUp) {
-        player.setVelocityY(0);
- 
-    } else
-
-      if (cursors.down.isUp) {
-         player.setVelocityY(0);
-
-     }
-
-     if(cursors.up.isDown && !cursors.left.isDown && !cursors.right.isDown){
-        player.anims.play('right', true);
-     }
-
-     if(!cursors.up.isDown && !cursors.left.isDown && !cursors.right.isDown && !cursors.down.isDown){
-        player.anims.play('turn');
-     }
-    
-
-}
 
 
-</script>
+            this.anims.create({
+                key: 'left',
+                frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+                frameRate: 10,
+                repeat: -1
+            });
+
+            this.anims.create({
+                key: 'turn',
+                frames: [{ key: 'dude', frame: 4 }],
+                frameRate: 20
+            });
+
+            this.anims.create({
+                key: 'right',
+                frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+                frameRate: 10,
+                repeat: -1
+            });
+
+            cursors = this.input.keyboard.createCursorKeys();
+
+            this.input.keyboard.addListener('keydown_SPACE', function (event) {
+                console.log('fsdaddsf');
+                shoot(this);
+            }, this);
+
+            this.input.keyboard.addListener('keydown_F', function (event) {
+                console.log('fsdaddsf');
+                addEnemy(this);
+            }, this);
+
+        }
+
+        function update() {
+            var keyboard = this.input.keyboard;
+
+            if (cursors.left.isDown) {
+                player.setVelocityX(-140);
+                player.anims.play('left', true);
+
+            }
+            else if (cursors.right.isDown) {
+                player.setVelocityX(140);
+                player.anims.play('right', true);
+
+            }
+            else {
+                player.setVelocityX(0);
+                // player.anims.play('turn');
+            }
 
 
-<script>
+            if (cursors.up.isDown) {
+                player.setVelocityY(-140);
+            } else
 
-   
+                if (cursors.down.isDown) {
+                    player.setVelocityY(140);
+                } else
 
-</script>
+                    if (cursors.up.isUp) {
+                        player.setVelocityY(0);
+
+                    } else
+
+                        if (cursors.down.isUp) {
+                            player.setVelocityY(0);
+
+                        }
+
+            if (cursors.up.isDown && !cursors.left.isDown && !cursors.right.isDown) {
+                player.anims.play('right', true);
+            }
+
+            if (!cursors.up.isDown && !cursors.left.isDown && !cursors.right.isDown && !cursors.down.isDown) {
+                player.anims.play('turn');
+            }
+
+            enemies.children.each(function (player) {
+                if (player.dead) {
+                    return;
+                }
+                goingDude(player);
+
+            });
+
+
+
+        }
+
+        function shoot(gameinstance) {
+            console.log('fsafsfds');
+            // gameinstance.physics.add.sprite(100, 100, 'bullet');
+
+            let bullet = bullets.create(player.x, player.y, 'bullet');
+            bullet.body.setAllowGravity(false);
+            bullet.body.setBounce(0);
+            bullet.setScale(0.15);
+
+            if (player.body.velocity.x >= 0) {
+                bullet.setVelocityX(1000);
+            } else {
+                bullet.setVelocityX(-1000);
+            }
+
+            // gameinstance.add.image(400, 300, 'bullet');
+
+        }
+
+        function addEnemy(gameinstance) {
+            let enemy = enemies.create(150, 150, 'dude');
+
+            enemy.setVelocityX(50);
+
+        }
+
+        function goingDude(player) {
+
+
+            if (player.x >= 300) {
+                player.setVelocityX(-50); // Jeśli gracz osiągnie punkt 300 w osi X, poruszamy go w lewo
+            } else if (player.x <= 100) {
+                player.setVelocityX(50); // Jeśli gracz osiągnie punkt 100 w osi X, poruszamy go w prawo
+            }
+
+            // Sprawdź, czy gracz osiągnął jeden z punktów docelowych i zmień prędkość tylko wtedy
+            if (player.x === 300 || player.x === 100) {
+                player.setVelocityX(player.body.velocity.x * -1); // Odwróć prędkość gracza
+            }
+
+
+            player.anims.play('right', true);
+
+
+        }
+
+
+
+    </script>
+
+
+    <script>
+
+
+
+    </script>
 
 
 </body>
+
 </html>
