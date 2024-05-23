@@ -9,13 +9,46 @@
 
     <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
 
+    <style>
+        body {
+            font-size:16px;
+            font-family:Arial;
+        }
+
+        p{
+            margin-bottom:0px;
+            margin-top:0px;
+        }
+</style>
+
 </head>
 
 <body>
+    <p>Sterowanie: strzałki - ruch , space - strzał</p>
+    <canvas id="myCanvas"></canvas>
+
+    <div>
+        <p>Wyniki:</p>
+        <div id="listScores">
 
 
-    <button onclick="enemiesShoot()">Enemyshoot</button>
-    <button onclick="enemiesJump()">jump</button>
+        </div>
+    </div>
+
+
+    <div id="scoreform" style="display:none">
+        <h1>Zapisz wynik</h1>
+        <label for="">Nickname:</label>
+        <input type="text" id="nicknameinput">
+        <button onclick="saveScore()">Zapisz</button>
+    </div>
+
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.2/axios.min.js"></script>
+
+
 
     <script>
         let cursors;
@@ -24,7 +57,10 @@
         let enemy;
         let enemies;
         let score = 0;
+        let scores = [];
+        let scorebool = false;
 
+        let nickname = 'dupa';
         let gameover = false;
 
         let enemybullets;
@@ -36,6 +72,7 @@
             type: Phaser.AUTO,
             width: 800,
             height: 600,
+            canvas: document.getElementById('myCanvas'),
             physics: {
                 default: 'arcade',
                 arcade: {
@@ -56,12 +93,12 @@
 
 
         function preload() {
-            this.load.image('sky', 'assets/sky.png');
-            this.load.image('bullet', 'assets/bullet.png');
-            this.load.image('platform', 'assets/platform.png');
+            this.load.image('sky', '../assets/sky.png');
+            this.load.image('bullet', '../assets/bullet.png');
+            this.load.image('platform', '../assets/platform.png');
 
 
-            this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+            this.load.spritesheet('dude', '../assets/dude.png', { frameWidth: 32, frameHeight: 48 });
 
         }
 
@@ -115,7 +152,7 @@
             }, this);
 
             var timedEvent = this.time.addEvent({
-                delay: 900,
+                delay: 1200,
                 callback: enemiesShoot,
                 callbackScope: this,
                 loop: true
@@ -135,7 +172,7 @@
                 loop: true
             });
 
-            addEnemy(350,200);
+            addEnemy(350, 200);
 
 
 
@@ -152,9 +189,7 @@
             this.lifetext.setText('Życie:' + player.life);
             this.scoretext.setText('Score:' + score);
 
-            if(player.life <= 0){
-                  this.gameovertext.visible = true;
-            }
+
 
 
 
@@ -173,8 +208,8 @@
                 stand();
             }
 
-            enemies.children.each((enemy)=>{
-                if(!enemy.active){
+            enemies.children.each((enemy) => {
+                if (!enemy.active) {
                     enemy.destroy();
                 }
             })
@@ -231,9 +266,9 @@
                     bullet.body.setBounce(0);
                     bullet.setScale(0.15);
 
-                    if(player.x < enemy.x){
+                    if (player.x < enemy.x) {
                         bullet.setVelocityX(-500);
-                    }else{
+                    } else {
                         bullet.setVelocityX(500);
 
                     }
@@ -269,8 +304,8 @@
 
 
         function enemyattack(player, bullet) {
-            if(player.life <= 0){
-            bullet.destroy();
+            if (player.life <= 0) {
+                bullet.destroy();
 
                 return;
             }
@@ -286,6 +321,9 @@
                 player.setVisible(false);
                 player.x = 1000;
                 player.y = 1000;
+                document.querySelector('#scoreform').style.display = 'block';
+                this.gameovertext.visible = true;
+
             }
 
         }
@@ -328,13 +366,13 @@
         }
 
 
-        function addEnemy(x,y) {
+        function addEnemy(x, y) {
 
-            if(!x){
+            if (!x) {
                 x = Math.random() * 800;
             }
 
-            if(!y){
+            if (!y) {
                 y = Math.random() * 300
             }
 
@@ -347,16 +385,45 @@
             enemy.life = 50;
             enemy.active = true;
             enemy.body.setBounce(0.6);
-            
+
 
 
         }
+
+        async function saveScore() {
+            await axios.post('/soldat/api/addscore.php', { score: score, nickname: document.querySelector('#nicknameinput').value });
+
+            scoreform.style.display = 'none';
+            getScores();
+        }
+
+        async function getScores() {
+            await axios.get('/soldat/api/read.php').then((res) => scores = res.data);
+            document.querySelector('#listScores').innerHTML = '';
+            for (let i = 0; i < scores.length; i++) {
+                let elem = scores[i];
+                document.querySelector('#listScores').innerHTML += `<p>${elem.nickname}:${elem.score}</p>`;
+            }
+
+           
+
+
+        }
+
+        getScores();
+
+   
+
+
+
+
 
 
 
 
 
     </script>
+
 
 </body>
 

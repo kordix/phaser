@@ -9,15 +9,49 @@
 
     <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
 
+    <style>
+        body {
+            font-size: 16px;
+            font-family: Arial;
+        }
+
+        p {
+            margin-bottom: 0px;
+            margin-top: 0px;
+        }
+    </style>
+
+
 </head>
 
 <body>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.2/axios.min.js"></script>
 
 
 
     <div>
         <button id="restart-button">space == restart</button>
     </div>
+
+    <canvas id="myCanvas"></canvas>
+
+    <div>
+        <p>Wyniki:</p>
+        <div id="listScores">
+
+
+        </div>
+    </div>
+
+
+    <div id="scoreform" style="display:none">
+        <h1>Zapisz wynik</h1>
+        <label for="">Nickname:</label>
+        <input type="text" id="nicknameinput">
+        <button onclick="saveScore()">Zapisz</button>
+    </div>
+
 
 
 
@@ -27,6 +61,8 @@
         let player;
         let cursors;
 
+        let score = 0;
+
         let platforms;
 
         let gameOver = false;
@@ -35,6 +71,8 @@
             type: Phaser.AUTO,
             width: 800,
             height: 600,
+            canvas: document.getElementById('myCanvas'),
+
             physics: {
                 default: 'arcade',
                 arcade: {
@@ -53,22 +91,25 @@
 
 
         function preload() {
-            this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
-            this.load.image('background', 'assets/sky.png');
-            this.load.image('platform', 'assets/platform2.png');
+            this.load.spritesheet('dude', '../assets/dudeoptim.png', { frameWidth: 32, frameHeight: 42 });
+            this.load.image('background', '../assets/sky.png');
+            this.load.image('platform', '../assets/platform3.png');
 
 
         }
 
         function create() {
-              let self = this;
+            let self = this;
             gameOver = false;
 
             let background = this.add.image(800, 300, 'background');
-            background.scaleX = 2;
-            this.physics.world.setBounds(0, 0, 1800, 900);
+            background.scaleX = 200;
+            this.physics.world.setBounds(0, 0, 18000, 900);
 
-            this.cameras.main.setBounds(0, 0, 1600, 600);
+            this.cameras.main.setBounds(0, 0, 100000, 600);
+
+
+
 
 
             player = this.physics.add.sprite(100, 100, 'dude');
@@ -79,14 +120,18 @@
             platforms = this.physics.add.staticGroup();
 
 
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 100; i++) {
+
+                let random = Math.random() * 300;
 
 
-                platforms.create(i * 400, Math.random * 400, 'platform');
-                platforms.create(i * 400, 400 + Math.random * 400, 'platform');
+                platforms.create(i * 400, random - 200, 'platform');
+                platforms.create(i * 400, random + 120 + 600 - 200, 'platform');
 
-                platforms.create(i * 400, 120, 'platform');
-                platforms.create(i * 400, 500, 'platform');
+                // platforms.create(i * 400, 400 + Math.random() * 100, 'platform');
+
+                // platforms.create(i * 400, 120, 'platform');
+                // platforms.create(i * 400, 500, 'platform');
 
             }
 
@@ -103,7 +148,7 @@
             })
 
             this.input.keyboard.addListener('keydown_SPACE', function (event) {
-                 self.scene.restart();
+                self.scene.restart();
             }, this);
 
 
@@ -132,14 +177,22 @@
             cursors = this.input.keyboard.createCursorKeys();
 
             var restartButton = document.getElementById("restart-button");
-          
+
             restartButton.addEventListener("click", function () {
                 self.scene.restart();
             });
 
+            this.scoretext = this.add.text(110, 10, 'Score:', { font: 'bold 20px Courier', fontStyle: 'bold', fill: '#222' });
+            this.scoretext.setScrollFactor(0);
+
         }
 
         function update() {
+
+
+            score = Math.floor(player.x / 400);
+            this.scoretext.setText('Score:' + score);
+
 
             if (gameOver) {
                 player.anims.play('turn', true);
@@ -147,6 +200,10 @@
                 if (this.keySpace.isDown) {
                     console.log('fasdfasdfdsafs');
                     this.scene.restart();
+                }
+
+                if (player.y > 600) {
+                    player.setVelocityX(0);
                 }
                 return
             }
@@ -162,6 +219,8 @@
             } else {
                 // stand();
             }
+
+
 
         }
 
@@ -190,6 +249,9 @@
             gameOver = true;
             player.setTint(0xff0000);
 
+                document.querySelector('#scoreform').style.display = 'block';
+
+
             // player.setVelocityX(0);
 
         }
@@ -217,6 +279,30 @@
             });
 
         }
+
+
+        async function saveScore() {
+            await axios.post('/flappy/api/addscore.php', { score: score, nickname: document.querySelector('#nicknameinput').value });
+
+            scoreform.style.display = 'none';
+            getScores();
+        }
+
+        async function getScores() {
+            await axios.get('/flappy/api/read.php').then((res) => scores = res.data);
+            document.querySelector('#listScores').innerHTML = '';
+            for (let i = 0; i < scores.length; i++) {
+                let elem = scores[i];
+                document.querySelector('#listScores').innerHTML += `<p>${elem.nickname}:${elem.score}</p>`;
+            }
+
+
+
+
+        }
+
+        getScores();
+
 
 
 
