@@ -113,6 +113,7 @@
 
 
             player = this.physics.add.sprite(100, 100, 'dude');
+            player.body.setSize(30,38);
             player.setCollideWorldBounds(true);
             player.setBounce(0.5);
             this.cameras.main.startFollow(player);

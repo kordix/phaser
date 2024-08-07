@@ -15,15 +15,26 @@
 <body>
 
     <ul id="messages"></ul>
+
+    <canvas id="myCanvas"></canvas>
+
     <form id="form" action="">
-        <input id="input" autocomplete="off" /><button>Send</button>
     </form>
 
 
     <div id="highscorediv"></div>
 
+    <button id="test">testpickaxe</button>
 
-    <button id="shootbutton">shoot</button>
+
+
+    <p>todo:</p>
+    <ul>
+        <li>crafting</li>
+        <li>kilofem można wydobyć kamień</li>
+        <li>można podnieść siekierę i wyrąbać drzewo</li>
+
+    </ul>
 
 
 
@@ -33,10 +44,12 @@
             type: Phaser.AUTO,
             width: 800,
             height: 600,
+            canvas: document.getElementById('myCanvas'),
+
             physics: {
                 default: 'arcade',
                 arcade: {
-                    gravity: false,
+                    gravity: { y: 300 },
                     debug: false
                 }
             },
@@ -63,13 +76,27 @@
 
         let enemies;
 
+        let hammers;
+        let hammersticked;
+        let hammer;
+
+        let walls;
+        let pickaxes;
+
         var game = new Phaser.Game(config);
+        let gameinstance = this;
 
         function preload() {
             this.load.image('background', 'assets/grass.png');
             this.load.image('bullet', 'assets/bullet.png');
+            this.load.image('mlotek', 'assets/mlotek.png');
+            this.load.image('pickaxe', 'assets/pickaxe.png');
+
+
 
             this.load.image('ground', 'assets/platform.png');
+            this.load.image('wall', 'assets/platformwhite2.png');
+
 
 
             this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
@@ -77,8 +104,12 @@
         }
 
         function create() {
+            gameinstance = this;
+
             //  A simple background for our game
             // this.add.image(400, 300, 'background');
+
+
 
             var tileSprite = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'background');
             // 'tiles' to nazwa tekstury, która zawiera tileset
@@ -95,15 +126,32 @@
 
             bullets = this.physics.add.group();
             enemies = this.physics.add.group();
+            hammers = this.physics.add.group();
+            pickaxes = this.physics.add.group();
+
+            walls = this.physics.add.staticGroup();
+            hammer = hammers.create(50, 300, 'mlotek');
+
+
+            hammer.setScale(0.2, 0.2);
+            hammer.setInteractive();
+
+            walls.create(50, 50, 'wall').refreshBody();
+
+
 
             platforms = this.physics.add.staticGroup();
 
             platforms.create(500, 568, 'ground').setScale(3).refreshBody();
 
             this.physics.add.collider(player, platforms);
+            this.physics.add.collider(player, walls);
+
+            this.physics.add.collider(hammers, platforms);
 
 
-
+            this.physics.add.collider(hammers, walls);
+            this.physics.add.collider(walls, hammers);
 
 
 
@@ -135,11 +183,30 @@
             }, this);
 
             this.input.keyboard.addListener('keydown_F', function (event) {
-                console.log('fsdaddsf');
-                addEnemy(this);
+                if (Math.abs(player.x - hammer.x) <= 30 && Math.abs(player.y - hammer.y) <= 20) {
+                    hammersticked = !hammersticked;
+                    player.body.setSize(53, 32);
+                }
+
+                // console.log('fsdaddsf');
+                // addEnemy(this);
+
+
             }, this);
 
+            player.setDepth(2);
+            hammer.setDepth(1);
+
+
+            addPickaxe(gameinstance);
+
+
+
+
+
         }
+
+
 
         function update() {
             var keyboard = this.input.keyboard;
@@ -194,6 +261,18 @@
 
             });
 
+            if (hammersticked) {
+                if (player.body.velocity.x < 0) {
+                    hammer.x = player.x - 30;
+                    hammer.flipX = false;
+                }
+                if (player.body.velocity.x > 0) {
+                    hammer.x = player.x + 30;
+                    hammer.flipX = true;
+                }
+                hammer.y = player.y;
+            }
+
 
 
         }
@@ -223,6 +302,19 @@
             enemy.setVelocityX(50);
 
         }
+
+        function addPickaxe(gameinstance){
+
+            pickaxe = pickaxes.create(Math.random()* 600, Math.random() * 400, 'pickaxe');
+
+
+
+        }
+
+        document.querySelector('#test').addEventListener('click', function(){
+            addPickaxe(gameinstance);
+        })
+
 
         function goingDude(player) {
 
