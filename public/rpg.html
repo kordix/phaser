@@ -78,10 +78,14 @@
 
         let hammers;
         let hammersticked;
+        let carryitem;
         let hammer;
 
         let walls;
         let pickaxes;
+        let axes;
+        let trees;
+        let woods;
 
         var game = new Phaser.Game(config);
         let gameinstance = this;
@@ -89,8 +93,17 @@
         function preload() {
             this.load.image('background', 'assets/grass.png');
             this.load.image('bullet', 'assets/bullet.png');
-            this.load.image('mlotek', 'assets/mlotek.png');
+            this.load.image('mlotek', 'assets/battle_hammer.gif');
             this.load.image('pickaxe', 'assets/pickaxe.png');
+            this.load.image('tree', 'assets/chojka.png');
+            this.load.image('axe', 'assets/axe.gif');
+            this.load.image('wood', 'assets/wood.png');
+            this.load.image('rock', 'assets/rock.webp');
+            this.load.image('stone', 'assets/stone.webp');
+
+
+
+
 
 
 
@@ -99,7 +112,10 @@
 
 
 
-            this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+            // this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+
+            this.load.spritesheet('dude', '../assets/dudeaxenowe.png', { frameWidth: 32, frameHeight: 48 });
+
 
         }
 
@@ -128,13 +144,18 @@
             enemies = this.physics.add.group();
             hammers = this.physics.add.group();
             pickaxes = this.physics.add.group();
+            axes = this.physics.add.group();
+            trees = this.physics.add.group();
+            woods = this.physics.add.group();
+            rocks = this.physics.add.group();
+            stones = this.physics.add.group();
+
+
+
+
+
 
             walls = this.physics.add.staticGroup();
-            hammer = hammers.create(50, 300, 'mlotek');
-
-
-            hammer.setScale(0.2, 0.2);
-            hammer.setInteractive();
 
             walls.create(50, 50, 'wall').refreshBody();
 
@@ -162,6 +183,13 @@
                 repeat: -1
             });
 
+            gameinstance.anims.create({
+                key: 'axe',
+                frames: gameinstance.anims.generateFrameNumbers('dude', { start: 9, end: 11 }),
+                frameRate: 5,
+                repeat: 0
+            });
+
             this.anims.create({
                 key: 'turn',
                 frames: [{ key: 'dude', frame: 4 }],
@@ -183,22 +211,136 @@
             }, this);
 
             this.input.keyboard.addListener('keydown_F', function (event) {
-                if (Math.abs(player.x - hammer.x) <= 30 && Math.abs(player.y - hammer.y) <= 20) {
-                    hammersticked = !hammersticked;
-                    player.body.setSize(53, 32);
+                console.log('SIEMANO');
+                console.log('Animation status:', player.anims.currentAnim);
+                player.anims.play('axe', true);
+
+
+                if (player.chops) {
+                    return;
                 }
 
-                // console.log('fsdaddsf');
-                // addEnemy(this);
+
+                this.children.getAll().forEach(function (object) {
+                    if (Math.abs(player.x - object.x) <= 30 && Math.abs(player.y - object.y) <= 20) {
+
+                        if (!carryitem) {
+                            if (object.pickable) {
+                                if (!carryitem) {
+                                    carryitem = object;
+                                } else {
+                                    //  carryitem = null;
+                                }
+                            }
+                        }
+
+                        if (carryitem?.type == 'axe') {
+                            if (object.type == 'tree') {
+                                console.log('ŚCINA DRZEWO');
+                                player.chops = true;
+                                player.anims.play('axe  ', true);
+                                carryitem.visible = false;
+                                object.setAlpha(object.alpha - 0.1);
+                                object.life -= 10;
+
+                                if (object.life <= 0) {
+                                    addWood(object.x, object.y);
+                                    object.destroy();
+                                }
+
+                                setTimeout(() => {
+                                    player.chops = false;
+                                    carryitem.visible = true;
+
+                                }, 500);
+
+                            }
+                        }
+
+                        if (carryitem?.type == 'pickaxe') {
+                            if (object.type == 'rock') {
+
+                                if (object.x > player.x) {
+                                    carryitem.rotation += 1.5;
+                                    setTimeout(() => {
+                                        carryitem.rotation -= 1.5;
+                                    }, 400);
+                                }
+
+                                if (object.x < player.x) {
+                                    carryitem.rotation -= 1.5;
+                                    setTimeout(() => {
+                                        carryitem.rotation += 1.5;
+                                    }, 400);
+                                }
+
+                                object.life -= 10;
+                                object.setAlpha(object.alpha - 0.1);
+
+
+                                if (object.life <= 0) {
+                                    addStone(object.x, object.y);
+                                    object.destroy();
+                                }
+
+
+                            }
+                        }
+
+
+
+
+                        // for (let i = 0; i < 10; i++) {
+                        //     if (carryitem?.type == 'pickaxe') {
+                        //         setTimeout(()=>{
+
+
+                        //         },500);
+                        //     }
+                        // }
+
+
+
+                    }
+                });
+
+
+
+
 
 
             }, this);
 
+            this.input.keyboard.addListener('keydown_G', function (event) {
+                carryitem = null
+            })
+
+
+
             player.setDepth(2);
-            hammer.setDepth(1);
+            // hammer.setDepth(1);
 
 
             addPickaxe(gameinstance);
+            addAxe(gameinstance);
+            addAxe(gameinstance);
+
+
+            addTree(gameinstance);
+            addTree(gameinstance);
+            addTree(gameinstance);
+            addTree(gameinstance);
+            addRock(gameinstance);
+
+
+
+
+            addHammer(gameinstance);
+            addHammer(gameinstance);
+
+            addHammer(gameinstance);
+
+
 
 
 
@@ -209,6 +351,9 @@
 
 
         function update() {
+
+
+
             var keyboard = this.input.keyboard;
 
             if (cursors.left.isDown) {
@@ -223,7 +368,9 @@
             }
             else {
                 player.setVelocityX(0);
-                // player.anims.play('turn');
+                if (!player.chops) {
+                    player.anims.play('turn');
+                }
             }
 
 
@@ -250,7 +397,7 @@
             }
 
             if (!cursors.up.isDown && !cursors.left.isDown && !cursors.right.isDown && !cursors.down.isDown) {
-                player.anims.play('turn');
+                // player.anims.play('turn');
             }
 
             enemies.children.each(function (player) {
@@ -261,16 +408,28 @@
 
             });
 
-            if (hammersticked) {
+            // if (hammersticked) {
+            //     if (player.body.velocity.x < 0) {
+            //         hammer.x = player.x - 30;
+            //         hammer.flipX = false;
+            //     }
+            //     if (player.body.velocity.x > 0) {
+            //         hammer.x = player.x + 30;
+            //         hammer.flipX = true;
+            //     }
+            //     hammer.y = player.y;
+            // }
+
+            if (carryitem) {
                 if (player.body.velocity.x < 0) {
-                    hammer.x = player.x - 30;
-                    hammer.flipX = false;
+                    carryitem.x = player.x - 15;
+                    carryitem.flipX = false;
                 }
                 if (player.body.velocity.x > 0) {
-                    hammer.x = player.x + 30;
-                    hammer.flipX = true;
+                    carryitem.x = player.x + 15;
+                    carryitem.flipX = true;
                 }
-                hammer.y = player.y;
+                carryitem.y = player.y;
             }
 
 
@@ -303,15 +462,62 @@
 
         }
 
-        function addPickaxe(gameinstance){
-
-            pickaxe = pickaxes.create(Math.random()* 600, Math.random() * 400, 'pickaxe');
+        function addHammer(gameinstance) {
+            hammer = hammers.create(Math.random() * 600, Math.random() * 400, 'mlotek');
+            // hammer.setScale(0.2, 0.2);
+            hammer.setInteractive();
+            hammer.type = 'hammer';
+            hammer.pickable = true;
 
 
 
         }
 
-        document.querySelector('#test').addEventListener('click', function(){
+        function addPickaxe(gameinstance) {
+            pickaxe = pickaxes.create(Math.random() * 600, Math.random() * 400, 'pickaxe');
+            pickaxe.type = 'pickaxe';
+            pickaxe.setDepth(1);
+            pickaxe.pickable = true;
+        }
+
+        function addAxe(gameinstance) {
+            axe = axes.create(Math.random() * 600, Math.random() * 400, 'axe');
+            axe.type = 'axe';
+            axe.pickable = true;
+            axe.setDepth(1);
+        }
+
+        function addTree() {
+            tree = trees.create(Math.random() * 600, Math.random() * 400, 'tree');
+            tree.type = 'tree';
+            tree.setDepth(0);
+            tree.life = 50;
+        }
+
+        function addRock() {
+            rock = rocks.create(Math.random() * 600, Math.random() * 400, 'rock');
+            rock.type = 'rock';
+            rock.life = 50;
+            rock.setScale(0.5);
+        }
+
+        function addStone(x,y){
+            stone = stones.create(x, y, 'stone');
+            stone.type = 'stone';
+            stone.pickable = true;
+            stone.setScale(0.2);
+        }
+
+        function addWood(x, y) {
+            wood = woods.create(x, y, 'wood');
+            wood.type = 'wood';
+            wood.pickable = true;
+            wood.setScale(0.3);
+            // tree.setDepth(0);
+            // tree.life = 50;
+        }
+
+        document.querySelector('#test').addEventListener('click', function () {
             addPickaxe(gameinstance);
         })
 
