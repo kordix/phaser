@@ -40,6 +40,10 @@ function enterBuildMode(gameinstance, pointer) {
             if (buildingToBuild == 'forge') {
                 addForge(gameinstance, pointer.worldX, pointer.worldY);
             }
+
+            if (buildingToBuild == 'farm') {
+                addFarm(gameinstance, pointer.worldX, pointer.worldY);
+            }
             buildmode = false;
             ghostbuilding.destroy();
 

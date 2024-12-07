@@ -21,6 +21,11 @@ document.querySelector('#buildforgebutton').addEventListener('click', function (
     enterBuildMode(gameinstance);
 })
 
+document.querySelector('#buildfarmbutton').addEventListener('click', function () {
+    buildingToBuild = 'farm';
+    enterBuildMode(gameinstance);
+})
+
 document.querySelector('#upgradebownambuttonrange').addEventListener('click', function () {
     pay({ gold: 20, wood: 20 }, game);
     stats.rangebowman += 10;
