@@ -11,15 +11,15 @@
 
     <style>
         body {
-            font-size:16px;
-            font-family:Arial;
+            font-size: 16px;
+            font-family: Arial;
         }
 
-        p{
-            margin-bottom:0px;
-            margin-top:0px;
+        p {
+            margin-bottom: 0px;
+            margin-top: 0px;
         }
-</style>
+    </style>
 
 </head>
 
@@ -67,6 +67,20 @@
 
         let life = 100;
 
+        let bulletsile = 6;
+
+        let bulletdupa;
+        let bulletdupa2;
+        let bulletdupa3;
+        let bulletdupa4;
+        let bulletdupa5;
+        let bulletdupa6;
+
+
+
+
+
+
         let platforms;
         let config = {
             type: Phaser.AUTO,
@@ -112,10 +126,48 @@
             this.lifetext = this.add.text(10, 10, 'Life:', { font: '16px Courier', fill: '#00ff00' });
             this.scoretext = this.add.text(110, 10, 'Score:', { font: '16px Courier', fill: '#222222' });
             this.gameovertext = this.add.text(300, 200, 'GAME OVER', { font: '30px Courier', fill: '#222222' });
+            this.loadingtext = this.add.text(680, 560, 'Ładowanie...', { font: '15px Courier', fill: '#222222' });
+
             this.gameovertext.visible = false;
+            this.loadingtext.visible = false;
+
+
+            bulletdupa = this.add.image(720, 570, 'bullet');
+            bulletdupa2 = this.add.image(730, 570, 'bullet');
+            bulletdupa3 = this.add.image(740, 570, 'bullet');
+            bulletdupa4 = this.add.image(750, 570, 'bullet');
+            bulletdupa5 = this.add.image(760, 570, 'bullet');
+            bulletdupa6 = this.add.image(770, 570, 'bullet');
+
+
+            bulletdupa.rotation = 4.71;
+            bulletdupa.setScale(0.25);
+
+            bulletdupa2.rotation = 4.71;
+            bulletdupa2.setScale(0.25);
+
+            bulletdupa3.rotation = 4.71;
+            bulletdupa3.setScale(0.25);
+
+
+            bulletdupa4.rotation = 4.71;
+            bulletdupa4.setScale(0.25);
+
+            bulletdupa5.rotation = 4.71;
+            bulletdupa5.setScale(0.25);
+
+            bulletdupa6.rotation = 4.71;
+            bulletdupa6.setScale(0.25);
+
+
+
+
+
 
 
             uilayer.add(this.lifetext);
+            uilayer.add(bulletdupa);
+
 
 
             platforms = this.physics.add.staticGroup();
@@ -173,6 +225,12 @@
             });
 
             addEnemy(350, 200);
+
+            this.input.keyboard.addListener('keydown_R', function (event) {
+                // console.log('fsdaddsf');
+                reload(this);
+            }, this);
+
 
 
 
@@ -239,14 +297,67 @@
             player.anims.play('turn', true);
         }
 
+        function reload(gameinstance) {
+            if (bulletsile == 0) {
+                gameinstance.loadingtext.visible = true;
+                setTimeout(() => {
+                    bulletsile = 6;
+                    bulletdupa.visible = 1;
+                    bulletdupa2.visible = 1;
+                    bulletdupa3.visible = 1;
+                    bulletdupa4.visible = 1;
+                    bulletdupa5.visible = 1;
+                    bulletdupa6.visible = 1;
+                    gameinstance.loadingtext.visible = false;
+
+
+                }, 2000);
+            }
+
+
+
+            // shoot();
+        }
+
 
         function shoot(gameinstance) {
+            if (bulletsile <= 0) {
+                return;
+            }
             // gameinstance.physics.add.sprite(100, 100, 'bullet');
 
             let bullet = bullets.create(player.x, player.y, 'bullet');
             bullet.body.setAllowGravity(false);
             bullet.body.setBounce(0);
             bullet.setScale(0.15);
+
+            bulletsile -= 1;
+
+            if (bulletsile == 0) {
+                bulletdupa.visible = 0;
+            }
+
+            if (bulletsile == 1) {
+                bulletdupa2.visible = 0;
+            }
+
+            if (bulletsile == 2) {
+                bulletdupa3.visible = 0;
+            }
+            if (bulletsile == 3) {
+                bulletdupa4.visible = 0;
+            }
+
+            if (bulletsile == 4) {
+                bulletdupa5.visible = 0;
+            }
+
+            if (bulletsile == 5) {
+                bulletdupa6.visible = 0;
+            }
+
+
+
 
             if (player.body.velocity.x >= 0) {
                 bullet.setVelocityX(600);
@@ -405,14 +516,14 @@
                 document.querySelector('#listScores').innerHTML += `<p>${elem.nickname}:${elem.score}</p>`;
             }
 
-           
+
 
 
         }
 
         getScores();
 
-   
+
 
 
 

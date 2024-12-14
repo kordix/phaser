@@ -11,7 +11,7 @@ function enemyWave(gameinstance) {
 
             addTree(Math.random() * 400, Math.random() * 300 );
 
-            wave++;
+            wave = Math.ceil(wave * 1.15);
 
         }
     })
