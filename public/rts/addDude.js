@@ -21,20 +21,15 @@ function addDude(gameinstance, x, y, type, klasa) {
 
 
 
-    if (type == 'player') {
+    // if (type == 'player') {
 
-        if (foodused >= food) {
-            return;
-        }
+    //     if (pay({ gold: cost }, gameinstance)) {
+    //         foodused += 1;
 
-
-        if (pay({ gold: cost }, gameinstance)) {
-            foodused += 1;
-
-        } else {
-            return
-        }
-    }
+    //     } else {
+    //         return
+    //     }
+    // }
 
 
 

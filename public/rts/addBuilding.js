@@ -6,6 +6,8 @@ function addBuilding(gameinstance, x, y) {
     building.placed = true;
     building.ready = true;
     building.life = 300;
+    building.occupied = false;
+
     building.setInteractive();
     building.setScale(0.8);
     building.body.setSize(building.width * 0.8, building.height * 0.8);
