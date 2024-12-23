@@ -76,12 +76,16 @@
         let bulletdupa5;
         let bulletdupa6;
 
+        let knifeui;
+
         let right = true;
         let left = false;
         let axeanim = false;
 
 
-        let currentweapon = 'pistol';
+        let currentweapon = 'bullet';
+
+        let reloadtext;
 
 
 
@@ -115,9 +119,83 @@
             this.load.image('sky', '../assets/sky.png');
             this.load.image('bullet', '../assets/bullet.png');
             this.load.image('platform', '../assets/platform.png');
+            this.load.image('knife', '../assets/knife.png');
+
 
 
             this.load.spritesheet('dude', '../assets/dudeaxe.png', { frameWidth: 32, frameHeight: 48 });
+
+        }
+
+        function drawbulletsui() {
+
+
+            bulletdupa.visible = 1;
+            bulletdupa2.visible = 1;
+            bulletdupa3.visible = 1;
+            bulletdupa4.visible = 1;
+            bulletdupa5.visible = 1;
+            bulletdupa6.visible = 1;
+
+            if (bulletsile == 0) {
+                bulletdupa.visible = 0;
+                bulletdupa2.visible = 0;
+                bulletdupa3.visible = 0;
+                bulletdupa4.visible = 0;
+                bulletdupa5.visible = 0;
+                bulletdupa6.visible = 0;
+            }
+
+            if(bulletsile == 0 && currentweapon != 'knife'){
+                reloadtext.visible = true;
+            }else{
+                reloadtext.visible = false;
+
+            }
+
+            if (bulletsile == 1) {
+                bulletdupa.visible = 1;
+                bulletdupa2.visible = 0;
+                bulletdupa3.visible = 0;
+                bulletdupa4.visible = 0;
+                bulletdupa5.visible = 0;
+                bulletdupa6.visible = 0;
+            }
+
+            if (bulletsile == 2) {
+                bulletdupa.visible = 1;
+                bulletdupa2.visible = 1;
+                bulletdupa3.visible = 0;
+                bulletdupa4.visible = 0;
+                bulletdupa5.visible = 0;
+                bulletdupa6.visible = 0;
+            }
+            if (bulletsile == 3) {
+                bulletdupa.visible = 1;
+                bulletdupa2.visible = 1;
+                bulletdupa3.visible = 1;
+                bulletdupa4.visible = 0;
+                bulletdupa5.visible = 0;
+                bulletdupa6.visible = 0;
+            }
+
+            if (bulletsile == 4) {
+                bulletdupa.visible = 1;
+                bulletdupa2.visible = 1;
+                bulletdupa3.visible = 1;
+                bulletdupa4.visible = 1;
+                bulletdupa5.visible = 0;
+                bulletdupa6.visible = 0;
+            }
+
+            if (bulletsile == 5) {
+                bulletdupa.visible = 1;
+                bulletdupa2.visible = 1;
+                bulletdupa3.visible = 1;
+                bulletdupa4.visible = 1;
+                bulletdupa5.visible = 1;
+                bulletdupa6.visible = 0;
+            }
 
         }
 
@@ -130,6 +208,9 @@
             let uilayer = this.add.container(0, 0);
             this.lifetext = this.add.text(10, 10, 'Life:', { font: '16px Courier', fill: '#00ff00' });
             this.scoretext = this.add.text(110, 10, 'Score:', { font: '16px Courier', fill: '#222222' });
+            reloadtext = this.add.text(700, 570, '(R)eload:', { font: '16px Courier', fill: '#222222' });
+            reloadtext.visible = false;
+
             this.gameovertext = this.add.text(300, 200, 'GAME OVER', { font: '30px Courier', fill: '#222222' });
             this.loadingtext = this.add.text(680, 560, 'Ładowanie...', { font: '15px Courier', fill: '#222222' });
 
@@ -143,6 +224,11 @@
             bulletdupa4 = this.add.image(750, 570, 'bullet');
             bulletdupa5 = this.add.image(760, 570, 'bullet');
             bulletdupa6 = this.add.image(770, 570, 'bullet');
+
+            knifeui = this.add.image(720, 570, 'knife');
+            knifeui.setScale(0.6)
+            knifeui.visible = 0;
+
 
 
             bulletdupa.rotation = 4.71;
@@ -211,9 +297,22 @@
             this.input.keyboard.on('keydown', function (event) {
                 if (event.key === '1') {
                     currentweapon = 'knife';
+                    knifeui.visible = 1;
+
+                    bulletdupa.visible = 0;
+                    bulletdupa2.visible = 0;
+                    bulletdupa3.visible = 0;
+                    bulletdupa4.visible = 0;
+                    bulletdupa5.visible = 0;
+                    bulletdupa6.visible = 0;
+
                 }
-                  if (event.key === '2') {
-                    currentweapon = 'pistol';
+                if (event.key === '2') {
+                    knifeui.visible = 0;
+
+                    currentweapon = 'bullet';
+
+                    drawbulletsui();
                 }
             });
 
@@ -260,6 +359,7 @@
 
             this.lifetext.setText('Życie:' + player.life);
             this.scoretext.setText('Score:' + score);
+
 
 
 
@@ -322,14 +422,13 @@
         function reload(gameinstance) {
             if (bulletsile == 0) {
                 gameinstance.loadingtext.visible = true;
+                reloadtext.visible = false;
+
                 setTimeout(() => {
                     bulletsile = 6;
-                    bulletdupa.visible = 1;
-                    bulletdupa2.visible = 1;
-                    bulletdupa3.visible = 1;
-                    bulletdupa4.visible = 1;
-                    bulletdupa5.visible = 1;
-                    bulletdupa6.visible = 1;
+                    if(currentweapon != 'knife'){
+                        drawbulletsui();
+                    }
                     gameinstance.loadingtext.visible = false;
 
 
@@ -344,64 +443,74 @@
 
         function shoot(gameinstance) {
 
-            if (currentweapon == 'knife') {
-                axeanim = true;
-                player.anims.play('axe', false);
-                setTimeout(() => {
-                    axeanim = false;
-                }, 800);
-                return;
+            // if (currentweapon == 'knife') {
+            //     axeanim = true;
+            //     player.anims.play('axe', false);
+            //     setTimeout(() => {
+            //         axeanim = false;
+            //     }, 800);
+            //     return;
+            // }
+
+
+
+
+            if (currentweapon != 'knife') {
+                if (bulletsile <= 0) {
+                    return;
+                }
+
+                bulletsile -= 1;
             }
 
 
 
-
-
-            if (bulletsile <= 0) {
-                return;
-            }
 
 
             // gameinstance.physics.add.sprite(100, 100, 'bullet');
+            let weapony = player.y;
+            if (currentweapon == 'knife') {
+                weapony = player.y + 10;
+            }
 
-            let bullet = bullets.create(player.x, player.y, 'bullet');
+            let playerx = player.x - 20;
+            if(!right){
+                playerx = player.x + 20;
+            }
+
+            let bullet = bullets.create(playerx, weapony, currentweapon);
             bullet.body.setAllowGravity(false);
             bullet.body.setBounce(0);
             bullet.setScale(0.15);
 
-            bulletsile -= 1;
+            let weaponspeed = 600;
 
-            if (bulletsile == 0) {
-                bulletdupa.visible = 0;
+            if (currentweapon == 'knife') {
+                weaponspeed = 200;
             }
-
-            if (bulletsile == 1) {
-                bulletdupa2.visible = 0;
-            }
-
-            if (bulletsile == 2) {
-                bulletdupa3.visible = 0;
-            }
-            if (bulletsile == 3) {
-                bulletdupa4.visible = 0;
-            }
-
-            if (bulletsile == 4) {
-                bulletdupa5.visible = 0;
-            }
-
-            if (bulletsile == 5) {
-                bulletdupa6.visible = 0;
-            }
-
-
 
 
             if (right) {
-                bullet.setVelocityX(600);
+                bullet.setVelocityX(weaponspeed);
             } else {
-                bullet.setVelocityX(-600);
+                bullet.setVelocityX(-weaponspeed);
+                bullet.flipX = true;
             }
+
+            if (currentweapon == 'knife') {
+                setTimeout(() => {
+                    bullet.setVelocityX(0);
+                    bullet.visible = 0;
+                    bullet.destroy();
+                }, 200);
+            }
+
+
+            if (currentweapon != 'knife') {
+                drawbulletsui();
+
+            }
+
 
             // gameinstance.add.image(400, 300, 'bullet');
 
@@ -465,6 +574,14 @@
             bullet.destroy();
 
             player.life -= 10;
+
+            player.setTint(0xff0000);
+
+            setTimeout(()=>{
+                player.clearTint();
+            },250)
+
+
 
             if (player.life <= 0) {
                 player.setVisible(false);
