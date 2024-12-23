@@ -11,6 +11,7 @@ function attackbase(dude, building) {
 
 
             gameovertext.setText('GAME OVER');
+            document.querySelector('#scoreform').style.display = 'block';
 
 
 
