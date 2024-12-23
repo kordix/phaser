@@ -328,14 +328,14 @@
 
 
         async function saveScore() {
-            await axios.post('/rds/api/addscore.php', { score: score, nickname: document.querySelector('#nicknameinput').value });
+            await axios.post('/rts/api/addscore.php', { score: score, nickname: document.querySelector('#nicknameinput').value });
 
             scoreform.style.display = 'none';
             getScores();
         }
 
         async function getScores() {
-            await axios.get('/rds/api/read.php').then((res) => scores = res.data);
+            await axios.get('/rts/api/read.php').then((res) => scores = res.data);
             document.querySelector('#listScores').innerHTML = '';
             for (let i = 0; i < scores.length; i++) {
                 let elem = scores[i];
