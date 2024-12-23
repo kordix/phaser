@@ -24,7 +24,7 @@
 </head>
 
 <body>
-    <p>Sterowanie: strzałki - ruch , space - strzał</p>
+    <p>Sterowanie: strzałki - ruch , space - strzał , R - reload</p>
     <canvas id="myCanvas"></canvas>
 
     <div>
@@ -76,7 +76,12 @@
         let bulletdupa5;
         let bulletdupa6;
 
+        let right = true;
+        let left = false;
+        let axeanim = false;
 
+
+        let currentweapon = 'pistol';
 
 
 
@@ -112,7 +117,7 @@
             this.load.image('platform', '../assets/platform.png');
 
 
-            this.load.spritesheet('dude', '../assets/dude.png', { frameWidth: 32, frameHeight: 48 });
+            this.load.spritesheet('dude', '../assets/dudeaxe.png', { frameWidth: 32, frameHeight: 48 });
 
         }
 
@@ -203,6 +208,15 @@
                 shoot(this);
             }, this);
 
+            this.input.keyboard.on('keydown', function (event) {
+                if (event.key === '1') {
+                    currentweapon = 'knife';
+                }
+                  if (event.key === '2') {
+                    currentweapon = 'pistol';
+                }
+            });
+
             var timedEvent = this.time.addEvent({
                 delay: 1200,
                 callback: enemiesShoot,
@@ -283,18 +297,26 @@
         }
 
         function goLeft() {
+            left = true;
+            right = false;
             player.setVelocityX(-150);
             player.anims.play('left', true);
         }
 
         function goRight() {
+            right = true;
+            left = false;
             player.setVelocityX(150);
             player.anims.play('right', true);
         }
 
         function stand() {
             player.setVelocityX(0);
-            player.anims.play('turn', true);
+
+            if (!axeanim) {
+                player.anims.play('turn', true);
+            }
+
         }
 
         function reload(gameinstance) {
@@ -321,9 +343,25 @@
 
 
         function shoot(gameinstance) {
+
+            if (currentweapon == 'knife') {
+                axeanim = true;
+                player.anims.play('axe', false);
+                setTimeout(() => {
+                    axeanim = false;
+                }, 800);
+                return;
+            }
+
+
+
+
+
             if (bulletsile <= 0) {
                 return;
             }
+
+
             // gameinstance.physics.add.sprite(100, 100, 'bullet');
 
             let bullet = bullets.create(player.x, player.y, 'bullet');
@@ -359,7 +397,7 @@
 
 
 
-            if (player.body.velocity.x >= 0) {
+            if (right) {
                 bullet.setVelocityX(600);
             } else {
                 bullet.setVelocityX(-600);
@@ -448,7 +486,10 @@
         function enemiesJump() {
             enemies.children.each(function (enemy) {
                 if (enemy.active) {
+                    let factor = Math.random() > 0.5 ? 1 : -1;
                     enemy.setVelocityY(-300);
+                    enemy.setVelocityX(Math.random() * 100 * factor);
+
                 }
             });
         }
@@ -465,6 +506,13 @@
                 frames: gameinstance.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
                 frameRate: 10,
                 repeat: -1
+            });
+
+            gameinstance.anims.create({
+                key: 'axe',
+                frames: gameinstance.anims.generateFrameNumbers('dude', { start: 9, end: 11 }),
+                frameRate: 10,
+                repeat: 0
             });
 
             gameinstance.anims.create({
