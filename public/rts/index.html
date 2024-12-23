@@ -61,6 +61,14 @@
 
     </div>
 
+    <div id="scoreform" style="display:none">
+        <h1>Zapisz wynik</h1>
+        <label for="">Nickname:</label>
+        <input type="text" id="nicknameinput">
+        <button onclick="saveScore()">Zapisz</button>
+    </div>
+
+
     <p>To do</p>
     <ul>
         <li>punkt zbiórki</li>
@@ -260,7 +268,7 @@
                 if (player.dead) {
                     player.destroy();
 
-                    if(player.type == 'player'){
+                    if (player.type == 'player') {
                         foodused -= 1;
                     }
                 }
@@ -281,7 +289,7 @@
             this.goldtext.setText('Złoto:' + gold);
             this.woodtext.setText('Drewno:' + wood);
             this.scoretext.setText('Wynik:' + score);
-            this.foodtext.setText('Food:' + foodused+'/'+food);
+            this.foodtext.setText('Food:' + foodused + '/' + food);
 
 
 
@@ -306,6 +314,30 @@
             cameraMoves(this);
 
         }
+
+
+        async function saveScore() {
+            await axios.post('/rds/api/addscore.php', { score: score, nickname: document.querySelector('#nicknameinput').value });
+
+            scoreform.style.display = 'none';
+            getScores();
+        }
+
+        async function getScores() {
+            await axios.get('/rds/api/read.php').then((res) => scores = res.data);
+            document.querySelector('#listScores').innerHTML = '';
+            for (let i = 0; i < scores.length; i++) {
+                let elem = scores[i];
+                document.querySelector('#listScores').innerHTML += `<p>${elem.nickname}:${elem.score}</p>`;
+            }
+
+
+
+
+        }
+
+        getScores();
+
 
     </script>
 
