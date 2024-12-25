@@ -12,6 +12,10 @@
 
 <body>
 
+    <p>Player1 - space - strzał, N - bieganie , M - zatrzymanie</p>
+    <p>Player2 - F - strzał, E - bieganie , R - zatrzymanie</p>
+
+
 
     <script>
 
@@ -51,6 +55,8 @@
         let endgame = false;
         let once = 1;
         let kick = 0;
+        let kick2 = 0;
+
         let stopper = 0;
 
         let friction = 0;
@@ -86,6 +92,8 @@
 
             this.velocitytext = this.add.text(400, 40, 'Ball velocity', { fill: '#ffff00' });
             this.stamina1text = this.add.text(100, 70, 'Player1 stamina:' + player1stamina, { fill: '#999999' });
+            this.stamina2text = this.add.text(100, 100, 'Player2 stamina:' + player2stamina, { fill: '#999999' });
+
 
 
             ball = this.physics.add.sprite(400, 300, 'ball').setScale(0.04);
@@ -137,6 +145,9 @@
 
 
             let ballcollider = this.physics.add.collider(player1, ball, littleKick);
+            let ballcollider2 = this.physics.add.collider(player2, ball, littleKick);
+
+            
             ballcollider.bounce = 0.1;
 
             // ballcollider.bodyBounce = 2;
@@ -165,7 +176,18 @@
 
             }, this);
 
+            this.input.keyboard.addListener('keydown_F', function (event) {
+                console.log('fsdaddsf');
+                kick = 1;
+
+            }, this);
+
             this.input.keyboard.addListener('keydown_M', function (event) {
+                console.log('X');
+                stopper = 1;
+            }, this);
+
+            this.input.keyboard.addListener('keydown_R', function (event) {
                 console.log('X');
                 stopper = 1;
             }, this);
@@ -177,11 +199,27 @@
                 player1speed += 30;
                 player1stamina -= 10;
 
-                this.stamina1text.setText('Player 1 stamina:'+player1stamina);
-              
+                this.stamina1text.setText('Player1 stamina:' + player1stamina);
+
 
                 setTimeout(() => {
                     player1speed -= 30;
+                }, 2000);
+            }, this);
+
+
+            this.input.keyboard.addListener('keydown_E', function (event) {
+                if (player2stamina <= 0) {
+                    return;
+                }
+                player2speed += 30;
+                player2stamina -= 10;
+
+                this.stamina2text.setText('Player2 stamina:' + player2stamina);
+
+
+                setTimeout(() => {
+                    player2speed -= 30;
                 }, 2000);
             }, this);
 
@@ -196,8 +234,12 @@
 
                 if (player1stamina < 100) {
                     player1stamina += 10
-                    this.stamina1text.setText('Player 1 stamina:' + player1stamina)
-                
+                    this.stamina1text.setText('Player1 stamina:' + player1stamina)
+                }
+
+                if (player2stamina < 100) {
+                    player2stamina += 10
+                    this.stamina2text.setText('Player2 stamina:' + player2stamina)
                 }
             }, 1000);
 
