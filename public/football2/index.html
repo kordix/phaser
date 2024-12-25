@@ -389,11 +389,11 @@
                         }
 
             if (keyboard.addKey('W').isDown) {
-                player2.setVelocityY(-150);
+                player2.setVelocityY(-player2speed);
             } else
 
                 if (keyboard.addKey('S').isDown) {
-                    player2.setVelocityY(150);
+                    player2.setVelocityY(player2speed);
                 } else
 
                     if (keyboard.addKey('W').isUp) {
