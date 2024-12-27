@@ -14,7 +14,25 @@
     <p>space = restart</p>
     <canvas id="myCanvas"></canvas>
 
+    <div>
+        <p>Wyniki:</p>
+        <div id="listScores">
 
+
+        </div>
+    </div>
+
+    <div id="scoreform" style="display:none">
+        <h1>Zapisz wynik</h1>
+        <label for="">Nickname:</label>
+        <input type="text" id="nicknameinput">
+        <button onclick="saveScore()">Zapisz</button>
+    </div>
+
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.2/axios.min.js"></script>
     <script>
         let canvas = document.querySelector('#myCanvas');
         // canvas.getContext('2d', { willReadFrequently: true})
@@ -78,8 +96,8 @@
 
 
 
-            let sky = this.add.image(400, 300, 'sky');
-            sky.setScale(10, 5);
+            let sky = this.add.image(410, 0, 'sky');
+            sky.setScale(1.1, 2);
 
 
             player = this.physics.add.sprite(100, 100, 'dude');
@@ -91,12 +109,14 @@
             // this.cameras.main.setBounds(0, 0, 800);
             this.cameras.main.startFollow(player);
 
-            this.scoretext = this.add.text(100,100,'DUPA');
+            this.scoretext = this.add.text(100, 50, 'DUPA');
 
-            let uilayer = this.add.container(0,0);
-            uilayer.setScrollFactor(0,0);
+            this.scoretext.setDepth(1);
 
-         
+            let uilayer = this.add.container(0, 0);
+            uilayer.setScrollFactor(0, 0);
+
+
 
 
 
@@ -119,7 +139,7 @@
 
             ground.setScale(2.2, 1).refreshBody();
 
-            // ground.setTint(0xffff00);
+
 
             setTimeout(() => {
                 ground.destroy();
@@ -147,17 +167,18 @@
                     return false
                 }
             });
-            this.physics.add.collider(platforms2, player, (dupa,pipa) => {
+            this.physics.add.collider(platforms2, player, (dupa, pipa) => {
 
-                if(dupa.body.touching.down){
+                if (dupa.body.touching.down) {
                     score = pipa.score;
                 }
-                
-             
+
+
             });
             this.physics.add.collider(player, lavas, () => {
                 player.setTint(0xff0000);
                 gameover = true;
+                document.querySelector('#scoreform').style.display = 'block';
             });
 
             this.physics.add.collider(player, leftground, () => {
@@ -185,7 +206,7 @@
 
                 dupa.score = i * 10;
 
-             
+
 
                 // dupa.body.setVelocityY(10);
 
@@ -201,7 +222,7 @@
             }, this);
 
 
-               uilayer.add(this.scoretext);
+            uilayer.add(this.scoretext);
 
 
 
@@ -213,7 +234,7 @@
                 return;
             }
 
-            this.scoretext.setText('Score:'+score);
+            this.scoretext.setText('Score:' + score);
 
             player.setVelocityX(velocity);
 
@@ -307,6 +328,25 @@
             });
 
         }
+
+        async function saveScore() {
+            await axios.post('/icytower/api/addscore.php', { score: score, nickname: document.querySelector('#nicknameinput').value });
+
+            scoreform.style.display = 'none';
+            getScores();
+        }
+
+        async function getScores() {
+            await axios.get('/icytower/api/read.php').then((res) => scores = res.data);
+            document.querySelector('#listScores').innerHTML = '';
+            for (let i = 0; i < scores.length; i++) {
+                let elem = scores[i];
+                document.querySelector('#listScores').innerHTML += `<p>${elem.nickname}:${elem.score}</p>`;
+            }
+        }
+
+        getScores();
+
 
     </script>
 
