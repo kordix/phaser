@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icy tower</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+
+</head>
+
+<body>
+
+    <p>space = restart</p>
+    <canvas id="myCanvas"></canvas>
+
+
+    <script>
+        let canvas = document.querySelector('#myCanvas');
+        // canvas.getContext('2d', { willReadFrequently: true})
+
+        var config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            canvas: document.getElementById('myCanvas'),
+
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 800 },
+                    debug: false
+                }
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            }
+        };
+
+        var game = new Phaser.Game(config);
+
+        let player;
+
+        let cursors;
+
+        let platforms;
+
+        let platforms2;
+
+        let lavas;
+
+        let isColliding = false;
+
+        let velocity = 0;
+
+        let gameover = false;
+
+        let score = 0;
+
+        function preload() {
+            this.load.image('sky', '../assets/sky.png');
+            this.load.image('platform', '../assets/platform.png');
+            this.load.image('lava', '../assets/lava.png');
+
+            this.load.image('platform2', '../assets/platform3.png');
+
+            this.load.spritesheet('dude', '../assets/dudeaxe.png', { frameWidth: 32, frameHeight: 48 });
+
+        }
+
+        function create() {
+
+            // W scenie Phaser
+            // this.physics.world.setBounds(0, -Infinity, 800, Infinity); // Brak granic pionowych
+            // this.physics.world.setBoundsCollision(true, true, false, true);
+
+
+
+            let sky = this.add.image(400, 300, 'sky');
+            sky.setScale(10, 5);
+
+
+            player = this.physics.add.sprite(100, 100, 'dude');
+            // player.setCollideWorldBounds(true);
+            player.body.setSize(28, 48);
+
+            this.physics.world.setBounds(0, 0, 800, 6000)
+
+            // this.cameras.main.setBounds(0, 0, 800);
+            this.cameras.main.startFollow(player);
+
+            this.scoretext = this.add.text(100,100,'DUPA');
+
+            let uilayer = this.add.container(0,0);
+            uilayer.setScrollFactor(0,0);
+
+         
+
+
+
+
+
+            cursors = this.input.keyboard.createCursorKeys();
+
+
+            createAnimations(this);
+
+            platforms = this.physics.add.staticGroup();
+            lavas = this.physics.add.staticGroup();
+            platforms2 = this.physics.add.group();
+            let ground = platforms.create(410, 590, 'platform');
+
+            let lava = lavas.create(0, 620, 'lava');
+
+            lava.setScale(10, 1).refreshBody();
+
+
+            ground.setScale(2.2, 1).refreshBody();
+
+            // ground.setTint(0xffff00);
+
+            setTimeout(() => {
+                ground.destroy();
+            }, 5000);
+
+            let leftground = platforms.create(0, -1195, 'platform2');
+            // leftground.setVelocityX(10);
+            // leftground.rotation = Math.PI / 2;
+            leftground.setScale(1, 6).refreshBody();
+
+            let rightground = platforms.create(850, -1195, 'platform2');
+
+            rightground.setScale(1, 6).refreshBody();
+
+
+
+
+
+            this.physics.add.collider(player, platforms, () => {
+                return
+            }, () => {
+                if (player.body.y > 500) {
+                    return true
+                } else {
+                    return false
+                }
+            });
+            this.physics.add.collider(platforms2, player, (dupa,pipa) => {
+
+                if(dupa.body.touching.down){
+                    score = pipa.score;
+                }
+                
+             
+            });
+            this.physics.add.collider(player, lavas, () => {
+                player.setTint(0xff0000);
+                gameover = true;
+            });
+
+            this.physics.add.collider(player, leftground, () => {
+                velocity = -velocity;
+                player.setVelocityY(player.body.velocity.y - 150);
+            });
+
+            this.physics.add.collider(player, rightground, () => {
+                velocity = -velocity;
+            });
+
+            // player.setBounce(0.5);
+
+
+
+
+            for (let i = 0; i < 100; i++) {
+
+                let dupa = platforms2.create(Math.random() * 400 + 300, 450 - i * 150, 'platform').setScale(0.5, 0.5);
+
+                // dupa.setScale(0.5,1).refreshBody();
+
+                dupa.body.setAllowGravity(false);
+                dupa.body.setImmovable(true);
+
+                dupa.score = i * 10;
+
+             
+
+                // dupa.body.setVelocityY(10);
+
+
+
+
+            }
+
+            let self = this;
+
+            this.input.keyboard.addListener('keydown_SPACE', function (event) {
+                location.reload();
+            }, this);
+
+
+               uilayer.add(this.scoretext);
+
+
+
+        }
+
+
+        function update() {
+            if (gameover) {
+                return;
+            }
+
+            this.scoretext.setText('Score:'+score);
+
+            player.setVelocityX(velocity);
+
+            // this.cameras.main.setPosition(0, 100)
+
+            if (player.y < 0) {
+                loser = 0;
+            }
+
+            // platforms[2].x += 1;
+
+            platforms2.children.iterate((dupa) => {
+                if (player.y < 0) {
+                    dupa.setVelocityY(100);
+                }
+
+                if (dupa.body.y > 580) {
+                    dupa.visible = 0;
+                }
+            })
+
+
+
+            if (cursors.up.isDown && player.body.touching.down) {
+                jump();
+            } else if (cursors.left.isDown) {
+                goLeft();
+            } else if (cursors.right.isDown) {
+                goRight()
+            } else {
+                stand();
+            }
+
+        }
+
+        function jump() {
+            player.setVelocityY(-510 - Math.abs(velocity) * 0.3);
+        }
+
+        function goLeft() {
+            velocity += -7;
+
+            left = true;
+            right = false;
+
+            player.anims.play('left', true);
+        }
+
+        function goRight() {
+            velocity += 7;
+            right = true;
+            left = false;
+            player.anims.play('right', true);
+        }
+
+        function stand() {
+            // player.setVelocityX(0);
+            player.anims.play('turn', true);
+
+        }
+
+
+
+
+        function createAnimations(gameinstance) {
+            gameinstance.anims.create({
+                key: 'turn',
+                frames: [{ key: 'dude', frame: 4 }],
+                frameRate: 20
+            });
+
+            gameinstance.anims.create({
+                key: 'right',
+                frames: gameinstance.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+                frameRate: 10,
+                repeat: -1
+            });
+
+            gameinstance.anims.create({
+                key: 'axe',
+                frames: gameinstance.anims.generateFrameNumbers('dude', { start: 9, end: 11 }),
+                frameRate: 10,
+                repeat: 0
+            });
+
+            gameinstance.anims.create({
+                key: 'left',
+                frames: gameinstance.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+                frameRate: 10,
+                repeat: -1
+            });
+
+        }
+
+    </script>
+
+</body>
+
+</html>

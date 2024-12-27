@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top-down-shooter`</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+
+</head>
+
+<body>
+
+
+    <canvas id="myCanvas"></canvas>
+
+
+
+    <script>
+
+        var config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            canvas: document.getElementById('myCanvas'),
+
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 },
+                    debug: false
+                }
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            }
+        };
+
+        var game = new Phaser.Game(config);
+
+        var player;
+
+        let cursors;
+
+        let playerspeed = 100;
+
+
+
+
+        function preload() {
+
+            this.load.spritesheet('dude', '../assets/dudeaxenowe.png', { frameWidth: 32, frameHeight: 48 });
+
+            this.load.image('background', '../assets/grass.png');
+            this.load.image('bullet', '../assets/bullet.png');
+
+
+        }
+
+        function create() {
+
+
+
+            var tileSprite = this.add.tileSprite(0, 0, game.config.width, game.config.height, 'background');
+            tileSprite.setOrigin(0);
+
+            player = this.physics.add.sprite(100, 450, 'dude');
+
+
+            this.anims.create({
+                key: 'left',
+                frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+                frameRate: 10,
+                repeat: -1
+            });
+
+            this.anims.create({
+                key: 'turn',
+                frames: [{ key: 'dude', frame: 4 }],
+                frameRate: 20
+            });
+
+            this.anims.create({
+                key: 'right',
+                frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+                frameRate: 10,
+                repeat: -1
+            });
+
+            cursors = this.input.keyboard.createCursorKeys();
+
+            this.input.on('pointerdown', (pointer, gameobject) => {
+
+                let bullet = this.physics.add.sprite(player.x,player.y,'bullet');
+
+                bullet.setScale(0.1);
+
+                bullet.setVelocityX(50);
+                bullet.setVelocityY(-50);
+
+                let target = new Phaser.Math.Vector2();
+
+                target.x = pointer.worldX;
+                target.y = pointer.worldY;
+
+                this.physics.moveToObject(bullet, target, 300);
+                
+
+                const x1 = player.x, y1 = player.y; // Punkt A
+                const x2 = target.x, y2 = target.y; // Punkt B
+
+                // Obliczenie różnic współrzędnych
+                const deltaY = y2 - y1;
+                const deltaX = x2 - x1;
+
+                // Obliczenie kąta w radianach
+                const theta = Math.atan2(deltaY, deltaX);
+                bullet.rotation = theta;
+
+            })
+
+
+
+
+        }
+
+        function update() {
+
+
+            var keyboard = this.input.keyboard;
+
+            if (keyboard.addKey('A').isDown) {
+                player.setVelocityX(-playerspeed);
+                player.anims.play('left', true);
+
+            }
+            else if (keyboard.addKey('D').isDown) {
+                player.setVelocityX(playerspeed);
+                player.anims.play('right', true);
+            }
+            else {
+                player.setVelocityX(0);
+            }
+
+            if (keyboard.addKey('W').isDown) {
+                player.setVelocityY(-playerspeed);
+            } else
+
+                if (keyboard.addKey('S').isDown) {
+                    player.setVelocityY(playerspeed);
+                } else
+
+                    if (keyboard.addKey('W').isUp) {
+                        player.setVelocityY(0);
+
+                    } else
+
+                        if (keyboard.addKey('S').isUp) {
+                            player.setVelocityY(0);
+
+                        }
+
+            if (!keyboard.addKey('W').isDown && !keyboard.addKey('A').isDown && !keyboard.addKey('D').isDown && !keyboard.addKey('A').isDown) {
+                player.anims.play('turn');
+            }
+
+
+
+
+
+
+        }
+
+    </script>
+</body>
+
+</html>
