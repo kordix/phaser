@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space invaders</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+
+</head>
+
+<body>
+
+
+    <canvas id="myCanvas"></canvas>
+
+
+    <script>
+
+        var config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            canvas: document.getElementById('myCanvas'),
+
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 },
+                    debug: false
+                }
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            }
+        };
+        var game = new Phaser.Game(config);
+
+        let spaceship;
+
+        let platforms;
+
+        let bullets;
+        let enemies;
+        let gameinstance;
+
+        function preload() {
+            this.load.image('spaceship', '../assets/spaceship.png');
+            this.load.image('sky', '../assets/sky.png');
+            this.load.image('bullet', '../assets/bullet.png');
+            this.load.image('alien', '../assets/alien.png');
+
+
+
+            this.load.image('platform2', '../assets/platform3.png');
+
+
+        }
+
+        function create() {
+            let gameinstance = this;
+
+            var tileSprite = this.add.tileSprite(0, 0, game.config.width, 10000, 'sky');
+
+            // this.add.image(0,2000,'sky');
+            // 'tiles' to nazwa tekstury, która zawiera tileset
+            // game.config.width i game.config.height to szerokość i wysokość ekranu
+
+            tileSprite.setOrigin(0,0); // Ustawienie pochodzenia na lewym górnym rogu
+
+            // this.add.image(config.width / 2, config.height / 2, 'sky');
+
+            spaceship = this.physics.add.sprite(200, 9999, 'spaceship');
+            spaceship.setScale(0.2);
+
+            spaceship.setVelocityY(-100);
+            // spaceship.setCollideWorldBounds(true);
+
+            this.cameras.main.startFollow(spaceship, true, 0.3, 0.3, 0, 200);
+
+            this.cameras.main.setBounds(0, 0, 800, 9999);
+            this.physics.world.setBounds(0, 0, 800, 9999);
+
+
+
+
+            platforms = this.physics.add.staticGroup();
+
+            let leftground = platforms.create(0, -1195, 'platform2');
+            leftground.setScale(1, 200).refreshBody();
+
+            let rightground = platforms.create(830, -1195, 'platform2');
+            rightground.setScale(1, 200).refreshBody();
+
+            this.physics.add.collider(platforms, spaceship);
+
+            this.input.keyboard.addListener('keydown_SPACE', ()=> {
+                shoot();
+            })
+
+            bullets = this.physics.add.group();
+            enemies = this.physics.add.group();
+
+            addEnemy(100,1000);
+
+            // addEnemy(200, 700);
+
+            for(let i =0;i < 100;i++){
+
+                addEnemy(Math.random() * 800, Math.random() * 3000);
+            }
+
+
+            this.physics.add.collider(bullets,enemies,(bullet,enemy)=> {
+                bullet.destroy();
+                enemy.life -= 10
+                enemy.setVelocityY(0);
+
+                if(enemy.life <= 0){
+                    enemy.destroy()
+                }
+            });
+
+
+
+
+
+
+        }
+
+        function addEnemy(x,y){
+            
+            let enemy = enemies.create(x, 9500 - y, 'alien');
+            enemy.setScale(0.15);
+            enemy.life = 50;
+
+        }
+
+        function update() {
+            //  this.cameras.main.x = - spaceship.body.x / 2;
+            //  this.cameras.main.y = -spaceship.body.y + 300;
+
+
+                       console.log(spaceship.y);
+
+
+            if (this.input.keyboard.addKey('W').isDown) {
+                spaceship.setVelocityY(-200);
+            }
+
+
+            if (this.input.keyboard.addKey('S').isDown) {
+                spaceship.setVelocityY(200);
+            }
+
+            if (this.input.keyboard.addKey('A').isDown) {
+                spaceship.setVelocityX(-200);
+            } else if (this.input.keyboard.addKey('D').isDown) {
+                spaceship.setVelocityX(200);
+            } else {
+                spaceship.setVelocityX(0);
+
+            }
+            
+
+
+
+            if (spaceship.body.velocity.y > 100) {
+                spaceship.setVelocityY(-10);
+                // spaceship.setVelocityY(0);
+            }
+
+
+
+        }
+
+        function shoot(){
+
+            let bullet = bullets.create(spaceship.x,spaceship.y,'bullet');
+
+            bullet.setScale(0.2);
+            bullet.rotation = - Math.PI / 2;
+
+            bullet.setVelocityY(-500);
+
+        }
+
+
+
+
+
+
+
+    </script>
+
+</body>
+
+</html>

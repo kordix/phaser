@@ -24,7 +24,7 @@
 
     <div id="scoreform" style="display:none">
         <h1>Zapisz wynik</h1>
-        <label for="">Nickname:</label>
+        <label>Nickname:</label>
         <input type="text" id="nicknameinput">
         <button onclick="saveScore()">Zapisz</button>
     </div>
@@ -46,7 +46,7 @@
             physics: {
                 default: 'arcade',
                 arcade: {
-                    gravity: { y: 800 },
+                    gravity: { y: 1100 },
                     debug: false
                 }
             },
@@ -77,6 +77,12 @@
 
         let score = 0;
 
+        let platformspeed = 0;
+        let platformspeedbase = 0;
+
+        let rotating = 0;
+
+
         function preload() {
             this.load.image('sky', '../assets/sky.png');
             this.load.image('platform', '../assets/platform.png');
@@ -95,14 +101,20 @@
             // this.physics.world.setBoundsCollision(true, true, false, true);
 
 
+            this.dupatext = this.add.text(100,100,'dupa');
 
             let sky = this.add.image(410, 0, 'sky');
             sky.setScale(1.1, 2);
 
 
             player = this.physics.add.sprite(100, 100, 'dude');
+            player.setDepth(1);
             // player.setCollideWorldBounds(true);
-            player.body.setSize(28, 48);
+            player.body.setSize(28, 1);
+            player.setOrigin(0.5,1)
+
+            // player.body.checkCollision.right = false;
+            // console.log(player);
 
             this.physics.world.setBounds(0, 0, 800, 6000)
 
@@ -139,20 +151,20 @@
 
             ground.setScale(2.2, 1).refreshBody();
 
+            // this.physics.world.createDebugGraphic();
+
 
 
             setTimeout(() => {
                 ground.destroy();
-            }, 5000);
+            }, 50000);
 
             let leftground = platforms.create(0, -1195, 'platform2');
-            // leftground.setVelocityX(10);
-            // leftground.rotation = Math.PI / 2;
-            leftground.setScale(1, 6).refreshBody();
+            leftground.setScale(1, 60).refreshBody();
+            leftground.y = - leftground.height * 29;
 
             let rightground = platforms.create(850, -1195, 'platform2');
-
-            rightground.setScale(1, 6).refreshBody();
+            rightground.setScale(1, 60).refreshBody();
 
 
 
@@ -173,6 +185,15 @@
                     score = pipa.score;
                 }
 
+            }, (dupa, pipa) => {
+                
+    
+                if (dupa.body.velocity.y > 0) {
+                    return true
+                } else {
+                    return false
+                }
+
 
             });
             this.physics.add.collider(player, lavas, () => {
@@ -181,13 +202,16 @@
                 document.querySelector('#scoreform').style.display = 'block';
             });
 
-            this.physics.add.collider(player, leftground, () => {
-                velocity = -velocity;
-                player.setVelocityY(player.body.velocity.y - 150);
+            this.physics.add.collider(player, leftground, (player, ground) => {
+                velocity = -velocity * 0.9;
+                // alert(player.body.velocity.x)
+                player.setVelocityY(player.body.velocity.y - Math.abs(velocity) * 0.4);
             });
 
             this.physics.add.collider(player, rightground, () => {
-                velocity = -velocity;
+                velocity = -velocity * 0.9;
+                player.setVelocityY(player.body.velocity.y - Math.abs(velocity) * 0.4);
+
             });
 
             // player.setBounce(0.5);
@@ -195,14 +219,30 @@
 
 
 
-            for (let i = 0; i < 100; i++) {
+            for (let i = 0; i < 1000; i++) {
 
-                let dupa = platforms2.create(Math.random() * 400 + 300, 450 - i * 150, 'platform').setScale(0.5, 0.5);
+                let scale = 0.5 * Math.random() * (1 - i / 100) + 0.4;
+                // let scale = 0.1;
 
+                let dupa = platforms2.create(Math.random() * 400 + 300, 450 - i * 150, 'platform').setScale(scale, 0.5);
+
+                // alert(dupa.body.width);
                 // dupa.setScale(0.5,1).refreshBody();
 
                 dupa.body.setAllowGravity(false);
+                // dupa.body.setSize((dupa.body.width * scale) + 400,1);
                 dupa.body.setImmovable(true);
+
+                // dupa.body.checkCollision.left = false;
+                // dupa.body.checkCollision.right = false;
+                // dupa.body.checkCollision.top = false;
+                // dupa.body.checkCollision.bottom = false;
+
+                console.log(dupa);
+
+
+
+                // dupa.setOrigin (0.6,0.5);
 
                 dupa.score = i * 10;
 
@@ -223,6 +263,8 @@
 
 
             uilayer.add(this.scoretext);
+            uilayer.add(this.dupatext);
+
 
 
 
@@ -230,8 +272,18 @@
 
 
         function update() {
+
             if (gameover) {
                 return;
+            }
+
+            this.dupatext.setText(player.y);
+
+
+            if (player.y < 0) {
+                if (platformspeedbase == 0) {
+                    platformspeedbase = 100;
+                }
             }
 
             this.scoretext.setText('Score:' + score);
@@ -244,11 +296,13 @@
                 loser = 0;
             }
 
+            platformspeed += 0.0;
+
             // platforms[2].x += 1;
 
             platforms2.children.iterate((dupa) => {
                 if (player.y < 0) {
-                    dupa.setVelocityY(100);
+                    dupa.setVelocityY(platformspeedbase + platformspeed);
                 }
 
                 if (dupa.body.y > 580) {
@@ -257,8 +311,8 @@
             })
 
 
-
-            if (cursors.up.isDown && player.body.touching.down) {
+                
+            if (cursors.up.isDown  && player.body.touching.down) {
                 jump();
             } else if (cursors.left.isDown) {
                 goLeft();
@@ -268,14 +322,33 @@
                 stand();
             }
 
+            if(rotating){
+                player.rotation += 0.1;
+                player.anims.play('turn');
+            } else {
+                player.rotation = 0;
+            }
+
+            if (Math.abs(player.body.velocity.x) > 500 && player.body.velocity.y < 0) {
+               
+                rotating = true;
+            } 
+
+            if(player.body.touching.down){
+                rotating  = false;
+            }
+
         }
 
         function jump() {
-            player.setVelocityY(-510 - Math.abs(velocity) * 0.3);
+            // alert(platformspeed);
+            // alert(platformspeedbase);
+            // player.setVelocityY(-100);
+            player.setVelocityY(-platformspeedbase + (-450 - Math.abs(velocity) * 0.3 + platformspeed * 3) + (platformspeedbase  > 0 ? 30 : -200));
         }
 
         function goLeft() {
-            velocity += -7;
+            velocity += -6;
 
             left = true;
             right = false;
@@ -284,7 +357,7 @@
         }
 
         function goRight() {
-            velocity += 7;
+            velocity += 6;
             right = true;
             left = false;
             player.anims.play('right', true);
