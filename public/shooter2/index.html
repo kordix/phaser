@@ -41,8 +41,13 @@
         var game = new Phaser.Game(config);
 
         var player;
+        var player2;
+
+
 
         let arrow;
+        let arrow2;
+
 
         let cursors;
 
@@ -75,8 +80,16 @@
             arrow.setOrigin(0.5, 0.7);
 
 
+            arrow2 = this.add.image(100, 100, 'arrow')
+            arrow2.setScale(0.5);
+            arrow2.setOrigin(0.5, 0.7);
+
 
             player = this.physics.add.sprite(100, 450, 'dude');
+            player2 = this.physics.add.sprite(200, 450, 'dude');
+
+            player2.setTint(0x00ff00)
+
 
 
 
@@ -103,42 +116,32 @@
 
             cursors = this.input.keyboard.createCursorKeys();
 
-            this.input.on('pointerdown', (pointer, gameobject) => {
 
-                let bullet = this.physics.add.sprite(player.x, player.y, 'bullet');
-
-                bullet.setScale(0.1);
-
-
-                let target = new Phaser.Math.Vector2();
-
-                target.x = pointer.worldX;
-                target.y = pointer.worldY;
-
-                this.physics.moveToObject(bullet, target, 300);
-
-
-                const x1 = player.x, y1 = player.y; // Punkt A
-                const x2 = target.x, y2 = target.y; // Punkt B
-
-                // Obliczenie różnic współrzędnych
-                const deltaY = y2 - y1;
-                const deltaX = x2 - x1;
-
-                // Obliczenie kąta w radianach
-                const theta = Math.atan2(deltaY, deltaX);
-                bullet.rotation = theta;
-
-            })
-
-            this.input.keyboard.addListener('keydown_F', () => {
+            this.input.keyboard.addListener('keydown_SPACE', () => {
                 let bullet = this.physics.add.sprite(player.x, player.y, 'bullet');
                 bullet.setScale(0.1);
 
                 totalVelocity = 300;
                 let angleRadians = arrow.rotation - Math.PI / 2;
                 bullet.rotation = arrow.rotation - Math.PI / 2;
-              
+
+                const velocityX = totalVelocity * Math.cos(angleRadians);
+                const velocityY = totalVelocity * Math.sin(angleRadians);
+
+                bullet.setVelocityX(velocityX);
+                bullet.setVelocityY(velocityY);
+
+
+            })
+
+            this.input.keyboard.addListener('keydown_F', () => {
+                let bullet = this.physics.add.sprite(player2.x, player2.y, 'bullet');
+                bullet.setScale(0.1);
+
+                totalVelocity = 300;
+                let angleRadians = arrow2.rotation - Math.PI / 2;
+                bullet.rotation = arrow2.rotation - Math.PI / 2;
+
                 const velocityX = totalVelocity * Math.cos(angleRadians);
                 const velocityY = totalVelocity * Math.sin(angleRadians);
 
@@ -158,15 +161,32 @@
             arrow.x = player.x;
             arrow.y = player.y;
 
+            arrow2.x = player2.x;
+            arrow2.y = player2.y;
+
+
 
             var keyboard = this.input.keyboard;
 
             if (keyboard.addKey('A').isDown) {
+                player2.setVelocityX(-playerspeed);
+                player2.anims.play('left', true);
+
+            }
+            else if (keyboard.addKey('D').isDown) {
+                player2.setVelocityX(playerspeed);
+                player2.anims.play('right', true);
+            }
+            else {
+                player2.setVelocityX(0);
+            }
+
+            if (cursors.left.isDown) {
                 player.setVelocityX(-playerspeed);
                 player.anims.play('left', true);
 
             }
-            else if (keyboard.addKey('D').isDown) {
+            else if (cursors.right.isDown) {
                 player.setVelocityX(playerspeed);
                 player.anims.play('right', true);
             }
@@ -175,24 +195,46 @@
             }
 
             if (keyboard.addKey('W').isDown) {
-                player.setVelocityY(-playerspeed);
+                player2.setVelocityY(-playerspeed);
             } else
 
                 if (keyboard.addKey('S').isDown) {
-                    player.setVelocityY(playerspeed);
+                    player2.setVelocityY(playerspeed);
                 } else
 
                     if (keyboard.addKey('W').isUp) {
-                        player.setVelocityY(0);
+                        player2.setVelocityY(0);
 
                     } else
 
                         if (keyboard.addKey('S').isUp) {
+                            player2.setVelocityY(0);
+
+                        }
+
+            if (cursors.up.isDown) {
+                player.setVelocityY(-playerspeed);
+            } else
+
+                if (cursors.down.isDown) {
+                    player.setVelocityY(playerspeed);
+                } else
+
+                    if (cursors.up.isUp) {
+                        player.setVelocityY(0);
+
+                    } else
+
+                        if (cursros.down.isUp) {
                             player.setVelocityY(0);
 
                         }
 
             if (!keyboard.addKey('W').isDown && !keyboard.addKey('A').isDown && !keyboard.addKey('D').isDown && !keyboard.addKey('A').isDown) {
+                player2.anims.play('turn');
+            }
+
+            if (!cursors.up.isDown && !cursors.left.isDown && !cursors.right.isDown && !cursors.down.isDown) {
                 player.anims.play('turn');
             }
 
