@@ -53,8 +53,8 @@
 
         let playerspeed = 100;
 
-
-
+        let bullets;
+        let bullets2;
 
         function preload() {
 
@@ -69,6 +69,7 @@
         }
 
         function create() {
+            let self = this;
 
 
 
@@ -89,6 +90,9 @@
             player2 = this.physics.add.sprite(200, 450, 'dude');
 
             player2.setTint(0x00ff00)
+
+            player.life = 100;
+            player2.life = 100;
 
 
 
@@ -115,10 +119,27 @@
             });
 
             cursors = this.input.keyboard.createCursorKeys();
+            bullets = this.physics.add.group();
+            bullets2 = this.physics.add.group();
 
+            this.physics.add.collider(player, bullets2, (player, bullet) => {
+                bullet.destroy();
+                player.life -= 10;
+                if (player.life <= 0) {
+                    player.x = 9999;
+                }
+            });
+
+            this.physics.add.collider(player2, bullets, (player, bullet) => {
+                bullet.destroy();
+                player2.life -= 10;
+                if (player2.life <= 0) {
+                    player2.x = 9999;
+                }
+            });
 
             this.input.keyboard.addListener('keydown_SPACE', () => {
-                let bullet = this.physics.add.sprite(player.x, player.y, 'bullet');
+                let bullet = bullets.create(player.x, player.y, 'bullet');
                 bullet.setScale(0.1);
 
                 totalVelocity = 300;
@@ -135,7 +156,7 @@
             })
 
             this.input.keyboard.addListener('keydown_F', () => {
-                let bullet = this.physics.add.sprite(player2.x, player2.y, 'bullet');
+                let bullet = bullets2.create(player2.x, player2.y, 'bullet');
                 bullet.setScale(0.1);
 
                 totalVelocity = 300;
@@ -225,7 +246,7 @@
 
                     } else
 
-                        if (cursros.down.isUp) {
+                        if (cursors.down.isUp) {
                             player.setVelocityY(0);
 
                         }
@@ -239,10 +260,18 @@
             }
 
             if (keyboard.addKey('R').isDown) {
-                arrow.rotation += 0.07;
+                arrow2.rotation += 0.07;
             }
 
             if (keyboard.addKey('E').isDown) {
+                arrow2.rotation -= 0.07;
+            }
+
+            if (keyboard.addKey('M').isDown) {
+                arrow.rotation += 0.07;
+            }
+
+            if (keyboard.addKey('N').isDown) {
                 arrow.rotation -= 0.07;
             }
 
