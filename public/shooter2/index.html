@@ -69,6 +69,11 @@
         }
 
         function create() {
+
+            this.lifetext = this.add.text(10, 10, 'Life:', { font: '16px Courier', fill: '#00ff00' });
+            this.lifetext2 = this.add.text(10, 30, 'Life 2:', { font: '16px Courier', fill: '#ffaaaa' });
+
+
             let self = this;
 
 
@@ -178,6 +183,9 @@
         }
 
         function update() {
+
+            this.lifetext.setText('Życie:' + player.life);
+            this.lifetext2.setText('Życie:' + player2.life);
 
             arrow.x = player.x;
             arrow.y = player.y;

@@ -146,9 +146,9 @@
                 bulletdupa6.visible = 0;
             }
 
-            if(bulletsile == 0 && currentweapon != 'knife'){
+            if (bulletsile == 0 && currentweapon != 'knife') {
                 reloadtext.visible = true;
-            }else{
+            } else {
                 reloadtext.visible = false;
 
             }
@@ -262,8 +262,12 @@
 
 
             platforms = this.physics.add.staticGroup();
-            platforms.create(300, 300, 'platform');
 
+
+            platforms.create(300, 300, 'platform');
+            platforms.create(400, 150, 'platform');
+            platforms.create(500, 400, 'platform');
+            platforms.create(280, 500, 'platform');
 
             bullets = this.physics.add.group();
             enemybullets = this.physics.add.group();
@@ -283,8 +287,37 @@
             let collider2 = this.physics.add.collider(enemybullets, player, enemyattack, null, this);
 
 
-            this.physics.add.collider(player, platforms);
-            this.physics.add.collider(enemies, platforms);
+            // this.physics.add.collider(player, platforms);
+
+            this.physics.add.collider(platforms, player, (dupa, pipa) => {
+
+            }, (dupa, pipa) => {
+
+                if (dupa.body.velocity.y > 0) {
+                    return true
+                } else {
+                    return false
+                }
+
+
+            });
+
+            this.physics.add.collider(enemies, platforms, (dupa, pipa) => {
+
+            }, (dupa, pipa) => {
+
+                if (dupa.body.velocity.y > 0) {
+                    return true
+                } else {
+                    return false
+                }
+
+
+            });
+
+
+
+            // this.physics.add.collider(enemies, platforms);
 
             this.physics.world.setBounds(0, 0, 800, 600);
 
@@ -426,7 +459,7 @@
 
                 setTimeout(() => {
                     bulletsile = 6;
-                    if(currentweapon != 'knife'){
+                    if (currentweapon != 'knife') {
                         drawbulletsui();
                     }
                     gameinstance.loadingtext.visible = false;
@@ -474,7 +507,7 @@
             }
 
             let playerx = player.x - 20;
-            if(!right){
+            if (!right) {
                 playerx = player.x + 20;
             }
 
@@ -577,9 +610,9 @@
 
             player.setTint(0xff0000);
 
-            setTimeout(()=>{
+            setTimeout(() => {
                 player.clearTint();
-            },250)
+            }, 250)
 
 
 
@@ -604,8 +637,8 @@
             enemies.children.each(function (enemy) {
                 if (enemy.active) {
                     let factor = Math.random() > 0.5 ? 1 : -1;
-                    enemy.setVelocityY(-300);
-                    enemy.setVelocityX(Math.random() * 100 * factor);
+                    enemy.setVelocityY(Math.random() * -600);
+                    enemy.setVelocityX(Math.random() * 50 * factor);
 
                 }
             });
@@ -649,7 +682,7 @@
             }
 
             if (!y) {
-                y = Math.random() * 300
+                y = Math.random() * 50
             }
 
             console.log('addEnemy');
