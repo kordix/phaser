@@ -202,6 +202,9 @@
 
         function create() {
 
+            this.physics.world.createDebugGraphic();
+
+
 
 
             this.add.image(400, 300, 'sky');
@@ -282,7 +285,9 @@
             player.life = 100;
 
 
-            let collider3 = this.physics.add.collider(bullets, enemies, attack2, null, this);
+            let collider3 = this.physics.add.collider(bullets, enemies, (bullet,enemy)=>{
+                attack2(bullet,enemy)
+            });
 
             let collider2 = this.physics.add.collider(enemybullets, player, enemyattack, null, this);
 
@@ -475,19 +480,6 @@
 
 
         function shoot(gameinstance) {
-
-            // if (currentweapon == 'knife') {
-            //     axeanim = true;
-            //     player.anims.play('axe', false);
-            //     setTimeout(() => {
-            //         axeanim = false;
-            //     }, 800);
-            //     return;
-            // }
-
-
-
-
             if (currentweapon != 'knife') {
                 if (bulletsile <= 0) {
                     return;
@@ -496,19 +488,15 @@
                 bulletsile -= 1;
             }
 
-
-
-
-
-            // gameinstance.physics.add.sprite(100, 100, 'bullet');
+  
             let weapony = player.y;
             if (currentweapon == 'knife') {
                 weapony = player.y + 10;
             }
 
-            let playerx = player.x - 20;
+            let playerx = player.x - 40;
             if (!right) {
-                playerx = player.x + 20;
+                playerx = player.x + 40;
             }
 
             let bullet = bullets.create(playerx, weapony, currentweapon);
@@ -519,7 +507,7 @@
             let weaponspeed = 600;
 
             if (currentweapon == 'knife') {
-                weaponspeed = 200;
+                weaponspeed = 300 + Math.abs(player.body.velocity.x);
             }
 
 
@@ -531,6 +519,9 @@
             }
 
             if (currentweapon == 'knife') {
+                // bullet.body.setSize(20,20);
+                bullet.type = 'knife';
+                bullet.setVelocityY(player.body.velocity.y);
                 setTimeout(() => {
                     bullet.setVelocityX(0);
                     bullet.visible = 0;
@@ -575,6 +566,10 @@
                 bullet.body.setVelocity(0, 0);
                 enemy.body.setVelocity(0, 0);
                 enemy.life -= 10;
+
+                if(bullet.type == 'knife'){
+                    enemy.life -= 10;
+                }
 
                 enemy.setAlpha(enemy.life / 50);
 
