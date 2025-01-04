@@ -146,6 +146,7 @@
                 bullet.destroy();
                 player.life -= 10;
                 if (player.life <= 0) {
+                    player.setCollideWorldBounds(false);
                     player.x = 9999;
                 }
             });
@@ -154,11 +155,15 @@
                 bullet.destroy();
                 player2.life -= 10;
                 if (player2.life <= 0) {
+                    player2.setCollideWorldBounds(false);
                     player2.x = 9999;
                 }
             });
 
             this.input.keyboard.on('keydown', function (event) {
+                if (Math.abs(player.body.velocity.x) > 0 && Math.abs(player.body.velocity.y) > 0) {
+                    return;
+                }
                 if (event.key == '5') {
                     let bullet = bullets.create(player.x, player.y, 'bullet');
                     bullet.setScale(0.1);
@@ -178,6 +183,9 @@
             })
 
             this.input.keyboard.addListener('keydown_F', () => {
+                if (Math.abs(player2.body.velocity.x) > 0 && Math.abs(player2.body.velocity.y) > 0) {
+                    return;
+                }
                 let bullet = bullets2.create(player2.x, player2.y, 'bullet');
                 bullet.setScale(0.1);
 
@@ -195,11 +203,20 @@
             })
 
 
+            player.setCollideWorldBounds(true);
+            player2.setCollideWorldBounds(true);
+
 
 
         }
 
         function update() {
+            var keyboard = this.input.keyboard;
+
+            if (keyboard.addKey('E').isDown) {
+                arrow2.rotation -= 0.07;
+            }
+
 
             this.lifetext.setText('Życie:' + player.life);
             this.lifetext2.setText('Życie:' + player2.life);
@@ -210,9 +227,20 @@
             arrow2.x = player2.x;
             arrow2.y = player2.y;
 
+            if (Math.abs(player.body.velocity.x) > 0 && Math.abs(player.body.velocity.y) > 0) {
+                arrow.visible = 0;
+            } else {
+                arrow.visible = 1;
+            }
+
+            if (Math.abs(player2.body.velocity.x) > 0 && Math.abs(player2.body.velocity.y) > 0) {
+                arrow2.visible = 0;
+            } else {
+                arrow2.visible = 1;
+            }
 
 
-            var keyboard = this.input.keyboard;
+
 
             if (keyboard.addKey('A').isDown) {
                 player2.setVelocityX(-playerspeed);
@@ -288,9 +316,6 @@
                 arrow2.rotation += 0.07;
             }
 
-            if (keyboard.addKey('E').isDown) {
-                arrow2.rotation -= 0.07;
-            }
 
             if (keyboard.addKey('M').isDown) {
                 arrow.rotation += 0.07;
