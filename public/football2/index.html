@@ -12,7 +12,7 @@
 
 <body>
 
-    <p>Player1 - space - strzał, N - bieganie , M - zatrzymanie</p>
+    <p>Player1 - space lub 5 - strzał, N lub 4 - bieganie , M lub 6 - zatrzymanie</p>
     <p>Player2 - F - strzał, E - bieganie , R - zatrzymanie</p>
 
 
@@ -147,7 +147,7 @@
             let ballcollider = this.physics.add.collider(player1, ball, littleKick);
             let ballcollider2 = this.physics.add.collider(player2, ball, littleKick);
 
-            
+
             ballcollider.bounce = 0.1;
 
             // ballcollider.bodyBounce = 2;
@@ -170,9 +170,31 @@
                 }
             })
 
-            this.input.keyboard.addListener('keydown_SPACE', function (event) {
-                console.log('fsdaddsf');
-                kick = 1;
+            this.input.keyboard.on('keydown', function (event) {
+
+                if (event.key == '4') {
+                    if (player1stamina <= 0) {
+                        return;
+                    }
+                    player1speed += 30;
+                    player1stamina -= 10;
+
+                    this.stamina1text.setText('Player1 stamina:' + player1stamina);
+
+
+                    setTimeout(() => {
+                        player1speed -= 30;
+                    }, 2000);
+
+                }
+
+                if (event.key == '5') {
+                    kick = 1;
+                }
+
+                if (event.key == '6') {
+                    stopper = 1;
+                }
 
             }, this);
 
