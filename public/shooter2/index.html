@@ -161,7 +161,7 @@
 
             this.input.keyboard.on('keydown', function (event) {
                 if (Math.abs(player.body.velocity.x) == 0 && Math.abs(player.body.velocity.y) == 0) {
-                
+
 
                     if (event.key == '5') {
                         let bullet = bullets.create(player.x, player.y, 'bullet');
@@ -182,21 +182,24 @@
 
             })
 
-            this.input.keyboard.addListener('keydown_F', () => {
-                if (Math.abs(player2.body.velocity.x) == 0 && Math.abs(player2.body.velocity.y) == 0) {
+            this.input.keyboard.on('keydown', function (event) {
+                if (event.key == 'U' || event.key == 'F') {
+                    if (Math.abs(player2.body.velocity.x) == 0 && Math.abs(player2.body.velocity.y) == 0) {
 
-                    let bullet = bullets2.create(player2.x, player2.y, 'bullet');
-                    bullet.setScale(0.1);
+                        let bullet = bullets2.create(player2.x, player2.y, 'bullet');
+                        bullet.setScale(0.1);
 
-                    totalVelocity = 300;
-                    let angleRadians = arrow2.rotation - Math.PI / 2;
-                    bullet.rotation = arrow2.rotation - Math.PI / 2;
+                        totalVelocity = 300;
+                        let angleRadians = arrow2.rotation - Math.PI / 2;
+                        bullet.rotation = arrow2.rotation - Math.PI / 2;
 
-                    const velocityX = totalVelocity * Math.cos(angleRadians);
-                    const velocityY = totalVelocity * Math.sin(angleRadians);
+                        const velocityX = totalVelocity * Math.cos(angleRadians);
+                        const velocityY = totalVelocity * Math.sin(angleRadians);
 
-                    bullet.setVelocityX(velocityX);
-                    bullet.setVelocityY(velocityY);
+                        bullet.setVelocityX(velocityX);
+                        bullet.setVelocityY(velocityY);
+
+                    }
 
                 }
 
@@ -339,8 +342,16 @@
                     arrow2.rotation -= 0.07;
                 }
 
+                if (keyboard.addKey('Y').isDown) {
+                    arrow2.rotation -= 0.07;
+                }
+
 
                 if (keyboard.addKey('R').isDown) {
+                    arrow2.rotation += 0.07;
+                }
+
+                if (keyboard.addKey('I').isDown) {
                     arrow2.rotation += 0.07;
                 }
             }
