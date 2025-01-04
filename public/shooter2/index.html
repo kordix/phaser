@@ -85,8 +85,7 @@
 
             // this.physics.world.createDebugGraphic();
 
-            this.lifetext = this.add.text(10, 10, 'Life:', { font: '16px Courier', fill: '#00ff00' });
-            this.lifetext2 = this.add.text(10, 30, 'Life 2:', { font: '16px Courier', fill: '#ffaaaa' });
+
 
 
             let self = this;
@@ -162,42 +161,44 @@
 
             this.input.keyboard.on('keydown', function (event) {
                 if (Math.abs(player.body.velocity.x) > 0 && Math.abs(player.body.velocity.y) > 0) {
-                    return;
-                }
-                if (event.key == '5') {
-                    let bullet = bullets.create(player.x, player.y, 'bullet');
-                    bullet.setScale(0.1);
+                
 
-                    totalVelocity = 300;
-                    let angleRadians = arrow.rotation - Math.PI / 2;
-                    bullet.rotation = arrow.rotation - Math.PI / 2;
+                    if (event.key == '5') {
+                        let bullet = bullets.create(player.x, player.y, 'bullet');
+                        bullet.setScale(0.1);
 
-                    const velocityX = totalVelocity * Math.cos(angleRadians);
-                    const velocityY = totalVelocity * Math.sin(angleRadians);
+                        totalVelocity = 300;
+                        let angleRadians = arrow.rotation - Math.PI / 2;
+                        bullet.rotation = arrow.rotation - Math.PI / 2;
 
-                    bullet.setVelocityX(velocityX);
-                    bullet.setVelocityY(velocityY);
+                        const velocityX = totalVelocity * Math.cos(angleRadians);
+                        const velocityY = totalVelocity * Math.sin(angleRadians);
+
+                        bullet.setVelocityX(velocityX);
+                        bullet.setVelocityY(velocityY);
+                    }
                 }
 
 
             })
 
             this.input.keyboard.addListener('keydown_F', () => {
-                if (Math.abs(player2.body.velocity.x) > 0 && Math.abs(player2.body.velocity.y) > 0) {
-                    return;
+                if (Math.abs(player2.body.velocity.x) == 0 && Math.abs(player2.body.velocity.y) == 0) {
+
+                    let bullet = bullets2.create(player2.x, player2.y, 'bullet');
+                    bullet.setScale(0.1);
+
+                    totalVelocity = 300;
+                    let angleRadians = arrow2.rotation - Math.PI / 2;
+                    bullet.rotation = arrow2.rotation - Math.PI / 2;
+
+                    const velocityX = totalVelocity * Math.cos(angleRadians);
+                    const velocityY = totalVelocity * Math.sin(angleRadians);
+
+                    bullet.setVelocityX(velocityX);
+                    bullet.setVelocityY(velocityY);
+
                 }
-                let bullet = bullets2.create(player2.x, player2.y, 'bullet');
-                bullet.setScale(0.1);
-
-                totalVelocity = 300;
-                let angleRadians = arrow2.rotation - Math.PI / 2;
-                bullet.rotation = arrow2.rotation - Math.PI / 2;
-
-                const velocityX = totalVelocity * Math.cos(angleRadians);
-                const velocityY = totalVelocity * Math.sin(angleRadians);
-
-                bullet.setVelocityX(velocityX);
-                bullet.setVelocityY(velocityY);
 
 
             })
@@ -206,6 +207,9 @@
             player.setCollideWorldBounds(true);
             player2.setCollideWorldBounds(true);
 
+            this.lifetext = this.add.text(10, 10, 'Life:', { font: '16px Courier', fill: '#00ff00' });
+            this.lifetext2 = this.add.text(10, 30, 'Life 2:', { font: '16px Courier', fill: '#ffaaaa' });
+
 
 
         }
@@ -213,9 +217,6 @@
         function update() {
             var keyboard = this.input.keyboard;
 
-            if (keyboard.addKey('E').isDown) {
-                arrow2.rotation -= 0.07;
-            }
 
 
             this.lifetext.setText('Życie:' + player.life);
@@ -227,16 +228,16 @@
             arrow2.x = player2.x;
             arrow2.y = player2.y;
 
-            if (Math.abs(player.body.velocity.x) > 0 && Math.abs(player.body.velocity.y) > 0) {
-                arrow.visible = 0;
-            } else {
+            if (Math.abs(player.body.velocity.x) == 0 && Math.abs(player.body.velocity.y) == 0) {
                 arrow.visible = 1;
+            } else {
+                arrow.visible = 0;
             }
 
-            if (Math.abs(player2.body.velocity.x) > 0 && Math.abs(player2.body.velocity.y) > 0) {
-                arrow2.visible = 0;
-            } else {
+            if (Math.abs(player2.body.velocity.x) == 0 && Math.abs(player2.body.velocity.y) == 0) {
                 arrow2.visible = 1;
+            } else {
+                arrow2.visible = 0;
             }
 
 
@@ -312,31 +313,39 @@
                 player.anims.play('turn');
             }
 
-            if (keyboard.addKey('R').isDown) {
-                arrow2.rotation += 0.07;
+
+
+
+            if (player.body.velocity.x == 0 && player.body.velocity.y == 0) {
+                if (keyboard.addKey('M').isDown) {
+                    arrow.rotation += 0.07;
+                }
+
+                if (keyboard.addKey('N').isDown) {
+                    arrow.rotation -= 0.07;
+                }
+
+                if (this.keyFour.isDown) {
+                    arrow.rotation -= 0.07;
+                }
+
+                if (this.keySix.isDown) {
+                    arrow.rotation += 0.07;
+                }
+            }
+
+            if (player2.body.velocity.x == 0 && player2.body.velocity.y == 0) {
+                if (keyboard.addKey('E').isDown) {
+                    arrow2.rotation -= 0.07;
+                }
+
+
+                if (keyboard.addKey('R').isDown) {
+                    arrow2.rotation += 0.07;
+                }
             }
 
 
-            if (keyboard.addKey('M').isDown) {
-                arrow.rotation += 0.07;
-            }
-
-            if (keyboard.addKey('6').isDown) {
-                arrow.rotation += 0.07;
-            }
-
-
-            if (keyboard.addKey('N').isDown) {
-                arrow.rotation -= 0.07;
-            }
-
-            if (this.keyFour.isDown) {
-                arrow.rotation -= 0.07;
-            }
-
-            if (this.keySix.isDown) {
-                arrow.rotation += 0.07;
-            }
 
 
 
