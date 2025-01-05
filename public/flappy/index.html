@@ -113,7 +113,7 @@
 
 
             player = this.physics.add.sprite(100, 100, 'dude');
-            player.body.setSize(30,38);
+            player.body.setSize(30, 38);
             player.setCollideWorldBounds(true);
             player.setBounce(0.5);
             this.cameras.main.startFollow(player);
@@ -139,7 +139,7 @@
 
             this.input.keyboard.addListener('keydown_SPACE', function (event) {
                 self.scene.restart();
-                   document.querySelector('#scoreform').style.display = 'none';
+                document.querySelector('#scoreform').style.display = 'none';
             }, this);
 
             this.physics.add.collider(player, platforms, endGame, null, this)
@@ -159,6 +159,13 @@
 
             this.scoretext = this.add.text(110, 10, 'Score:', { font: 'bold 20px Courier', fontStyle: 'bold', fill: '#222' });
             this.scoretext.setScrollFactor(0);
+
+            this.input.on('pointerdown', () => {
+                // jump();
+                if (!gameOver) {
+                    player.setVelocityY(-346);
+                }
+            })
 
         }
 
@@ -224,7 +231,7 @@
             gameOver = true;
             player.setTint(0xff0000);
 
-                document.querySelector('#scoreform').style.display = 'block';
+            document.querySelector('#scoreform').style.display = 'block';
 
 
             // player.setVelocityX(0);

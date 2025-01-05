@@ -88,6 +88,14 @@
         let player1stamina = 100;
         let player2stamina = 100;
 
+        let goesleft = false;
+        let goesup = false;
+        let goesright = false;
+        let goesdown = false;
+
+
+
+
 
 
 
@@ -98,6 +106,13 @@
             this.load.spritesheet('dude2', '../assets/dude2.png', { frameWidth: 32, frameHeight: 48 });
             this.load.image('platform', '../assets/platformwhite.png');
             this.load.image('platform2', '../assets/platformwhite2.png');
+            this.load.image('leftbutton', '../assets/leftbutton.png')
+            this.load.image('4button', '../assets/4button.png');
+            this.load.image('5button', '../assets/5button.png');
+            this.load.image('6button', '../assets/6button.png');
+
+
+
 
         }
 
@@ -117,6 +132,52 @@
             this.velocitytext = this.add.text(400, 40, 'Ball velocity', { fill: '#ffff00' });
             this.stamina1text = this.add.text(100, 70, 'Player1 stamina:' + player1stamina, { fill: '#999999' });
             this.stamina2text = this.add.text(100, 100, 'Player2 stamina:' + player2stamina, { fill: '#999999' });
+
+            this.leftbutton = this.add.image(60, 540, 'leftbutton').setScale(0.1, 0.1).setInteractive();
+            this.rightbutton = this.add.image(160, 540, 'leftbutton').setScale(0.1, 0.1).setInteractive();;
+            this.rightbutton.flipX = true;
+
+            this.upbutton = this.add.image(110, 490, 'leftbutton').setScale(0.1, 0.1).setInteractive();;
+            this.upbutton.rotation = Math.PI * 0.5;
+
+
+            this.downbutton = this.add.image(110, 540, 'leftbutton').setScale(0.1, 0.1).setInteractive();;
+            this.downbutton.rotation = Math.PI * 1.5;
+
+            this.button4 = this.add.image(220, 540, '4button').setScale(0.1, 0.1).setInteractive();
+            this.button5 = this.add.image(270, 540, '5button').setScale(0.1, 0.1).setInteractive();
+            this.button6 = this.add.image(320, 540, '6button').setScale(0.1, 0.1).setInteractive();
+
+
+
+            this.leftbutton.on('pointerdown', () => {
+                goesleft = true;
+            });
+
+            this.rightbutton.on('pointerdown', () => {
+                goesright = true;
+            });
+
+            this.upbutton.on('pointerdown', () => {
+                goesup = true;
+            });
+
+            this.downbutton.on('pointerdown', () => {
+                goesdown = true;
+            });
+
+            this.input.on('pointerup', () => {
+                goesleft = false;
+                goesright = false;
+                goesup = false;
+                goesdown = false;
+            })
+
+
+
+
+
+
 
 
 
@@ -199,10 +260,63 @@
                 }
             })
 
+
+            this.button4.on('pointerdown', () => {
+                self.button4.setTint(0xff0000);
+
+                if (player1stamina <= 0) {
+                    player1.setTint(0xff0000);
+                    setTimeout(() => {
+                        player1.setTint(0xffffff);
+                    }, 200);
+                    return;
+                }
+                player1speed += 30;
+                player1stamina -= 10;
+
+                this.stamina1text.setText('Player1 stamina:' + player1stamina);
+
+
+                setTimeout(() => {
+                    player1speed -= 30;
+                }, 2000);
+            })
+
+            this.button5.on('pointerdown', (pointer, gameobject) => {
+                kick = 1;
+                self.button5.setTint(0xff0000);
+
+            })
+
+            this.button6.on('pointerdown', () => {
+                stopper = 1;
+                self.button6.setTint(0xff0000);
+            })
+
+            this.button4.on('pointerup', () => {
+                self.button4.setTint(0xffffff);
+            })
+
+            this.button5.on('pointerup', () => {
+                self.button5.setTint(0xffffff);
+            })
+
+
+
+            this.button6.on('pointerup', () => {
+                self.button6.setTint(0xffffff);
+            })
+
+
+
             this.input.keyboard.on('keydown', function (event) {
 
                 if (event.key == '4') {
                     if (player1stamina <= 0) {
+                        player1.setTint(0xff0000);
+                        setTimeout(() => {
+                            player1.setTint(0xffffff);
+                        }, 200);
                         return;
                     }
                     player1speed += 30;
@@ -296,6 +410,7 @@
 
 
 
+
         }
 
 
@@ -338,6 +453,48 @@
         }
 
         function update() {
+
+            if (kick) {
+                player1.setTint(0x00ff00);
+            }
+
+            if (stopper) {
+                player1.setTint(0xffff00);
+            }
+
+            if (!kick && !stopper) {
+                player1.setTint(0xffffff);
+
+            }
+
+
+            if (goesleft) {
+                this.leftbutton.setTint(0xff0000);
+            } else {
+                this.leftbutton.setTint(0xffffff);
+
+            }
+
+            if (goesright) {
+                this.rightbutton.setTint(0xff0000);
+            } else {
+                this.rightbutton.setTint(0xffffff);
+
+            }
+
+            if (goesup) {
+                this.upbutton.setTint(0xff0000);
+            } else {
+                this.upbutton.setTint(0xffffff);
+
+            }
+
+            if (goesdown) {
+                this.downbutton.setTint(0xff0000);
+            } else {
+                this.downbutton.setTint(0xffffff);
+
+            }
 
 
 
@@ -397,12 +554,12 @@
 
             var keyboard = this.input.keyboard;
 
-            if (cursors.left.isDown) {
+            if (cursors.left.isDown || goesleft) {
                 player1.setVelocityX(-player1speed);
                 player1.anims.play('left', true);
 
             }
-            else if (cursors.right.isDown) {
+            else if (cursors.right.isDown || goesright) {
                 player1.setVelocityX(player1speed);
                 player1.anims.play('right', true);
             }
@@ -427,11 +584,13 @@
 
 
 
-            if (cursors.up.isDown) {
+
+
+            if (cursors.up.isDown || goesup) {
                 player1.setVelocityY(-player1speed);
             } else
 
-                if (cursors.down.isDown) {
+                if (cursors.down.isDown || goesdown) {
                     player1.setVelocityY(player1speed);
                 } else
 
@@ -474,11 +633,11 @@
 
 
 
-            if (cursors.up.isDown && !cursors.left.isDown && !cursors.right.isDown) {
+            if ((cursors.up.isDown || goesup) && !cursors.left.isDown && !cursors.right.isDown) {
                 player1.anims.play('right', true);
             }
 
-            if (!cursors.up.isDown && !cursors.left.isDown && !cursors.right.isDown && !cursors.down.isDown) {
+            if (!cursors.up.isDown && !cursors.left.isDown && !cursors.right.isDown && !cursors.down.isDown && !goesleft && !goesright && !goesdown && !goesup) {
                 player1.anims.play('turn');
             }
 

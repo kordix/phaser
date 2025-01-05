@@ -41,10 +41,9 @@ function goCommand(gameinstance) {
 
                             // let vector = vectors.find((el) => el.dudeid == player.dudeid);
                             gameinstance.physics.moveToObject(player, target, player.speed);
+                            player.clicked = false;
+                            player.tint = '0xffffff';
 
-                            setInterval(() => {
-                                // gameinstance.physics.moveToObject(player, target, player.speed);
-                            }, 1000)
                         }
                     }
                 }
