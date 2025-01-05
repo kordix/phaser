@@ -15,11 +15,35 @@
     <p>Player1 - space lub 5 - strzał, N lub 4 - bieganie , M lub 6 - zatrzymanie</p>
     <p>Player2 - F - strzał, E - bieganie , R - zatrzymanie</p>
 
+    <canvas id="mycanvas"></canvas>
+    <br>
+    <label for="">Bot:</label>
+    <input type="checkbox" onchange="handleBot()" id="botcheckbox">
+
 
 
     <script>
 
+        if (localStorage.bot === 'true') {
+            document.querySelector('#botcheckbox').checked = true;
+        }
+
+        function handleBot() {
+
+
+
+            if (localStorage.bot === 'true') {
+                localStorage.bot = 'false';
+            } else {
+                localStorage.bot = 'true';
+            }
+
+            location.reload();
+        }
+
+
         var config = {
+            canvas: document.getElementById('mycanvas'),
             type: Phaser.AUTO,
             width: 800,
             height: 600,
@@ -120,6 +144,11 @@
 
             player2 = this.physics.add.sprite(700, 450, 'dude2');
             player2.setAlpha(0.9);
+
+            if (localStorage.bot === 'true') {
+                player2.x = 750;
+                player2.y = 300;
+            }
 
             this.physics.add.collider(platforms, ball);
 
@@ -311,6 +340,7 @@
         function update() {
 
 
+
             this.velocitytext.setText('x:' + ball.body.x);
 
             if (endgame) {
@@ -347,11 +377,14 @@
 
                 setTimeout(() => {
 
-
+                    let factor = 1;
+                    if (Math.random() > 0.5) {
+                        factor = -1;
+                    }
                     ball.x = 400;
                     ball.y = 300;
-                    ball.setVelocityX(Math.random() * 400);
-                    ball.setVelocityY(Math.random() * 400);
+                    ball.setVelocityX(Math.random() * 400 * factor);
+                    ball.setVelocityY(Math.random() * 400 * factor);
                     once = 1;
 
 
@@ -377,17 +410,19 @@
                 player1.setVelocityX(0);
             }
 
-            if (keyboard.addKey('A').isDown) {
-                player2.setVelocityX(-player2speed);
-                player2.anims.play('left2', true);
+            if (localStorage.bot !== 'true') {
+                if (keyboard.addKey('A').isDown) {
+                    player2.setVelocityX(-player2speed);
+                    player2.anims.play('left2', true);
 
-            }
-            else if (keyboard.addKey('D').isDown) {
-                player2.setVelocityX(player2speed);
-                player2.anims.play('right2', true);
-            }
-            else {
-                player2.setVelocityX(0);
+                }
+                else if (keyboard.addKey('D').isDown) {
+                    player2.setVelocityX(player2speed);
+                    player2.anims.play('right2', true);
+                }
+                else {
+                    player2.setVelocityX(0);
+                }
             }
 
 
@@ -410,23 +445,30 @@
 
                         }
 
-            if (keyboard.addKey('W').isDown) {
-                player2.setVelocityY(-player2speed);
-            } else
 
-                if (keyboard.addKey('S').isDown) {
-                    player2.setVelocityY(player2speed);
+            if (localStorage.bot !== 'true') {
+
+                if (keyboard.addKey('W').isDown) {
+                    player2.setVelocityY(-player2speed);
                 } else
 
-                    if (keyboard.addKey('W').isUp) {
-                        player2.setVelocityY(0);
-
+                    if (keyboard.addKey('S').isDown) {
+                        player2.setVelocityY(player2speed);
                     } else
 
-                        if (keyboard.addKey('S').isUp) {
+                        if (keyboard.addKey('W').isUp) {
                             player2.setVelocityY(0);
 
-                        }
+                        } else
+
+                            if (keyboard.addKey('S').isUp) {
+                                player2.setVelocityY(0);
+
+                            }
+
+            }
+
+
 
 
 
@@ -468,6 +510,43 @@
             if (ball.body.velocity.x < 0) {
                 ball.body.velocity.x += friction;
             }
+
+            if (localStorage.bot === 'true') {
+
+
+                if (ball.y > player2.y) {
+
+                    player2.setVelocityY(50);
+                } else {
+                    player2.setVelocityY(-50);
+                }
+
+                if (player2.x > 800) {
+                    setTimeout(() => {
+                        player2.x = 750;
+                        player2.setVelocityX(0);
+                        player2.y = 300;
+                        player1.x = 300;
+
+                        let factor = 1;
+                        if (Math.random() > 0.5) {
+                            factor = -1;
+                        }
+                        ball.x = 400;
+                        ball.y = 300;
+                        ball.setVelocityX(Math.random() * 400 * factor);
+                        ball.setVelocityY(Math.random() * 400 * factor);
+                        once = 1;
+
+                    }, 1000);
+                }
+
+                if (player1.x > 750) {
+                    player1.x = 400
+                }
+
+            }
+
 
 
         }
