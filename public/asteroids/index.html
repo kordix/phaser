@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@v3.87.0/dist/phaser.min.js"></script>
+
+</head>
+
+<body>
+
+
+    <canvas id="mycanvas"></canvas>
+    <div>
+        <p>Wyniki:</p>
+        <div id="listScores">
+
+
+        </div>
+    </div>
+
+
+    <div id="scoreform" style="display:none">
+        <h1>Zapisz wynik</h1>
+        <label for="">Nickname:</label>
+        <input type="text" id="nicknameinput">
+        <button onclick="saveScore()">Zapisz</button>
+    </div>
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.2/axios.min.js"></script>
+    <script>
+
+        let config = {
+            type: Phaser.WEBGL,
+            width: 800,
+            height: 600,
+            canvas: document.getElementById('mycanvas'),
+
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 },
+                    debug: false
+                }
+            },
+            scene: {
+                preload: preload,
+                update: update,
+                create: create
+            }
+        }
+
+        new Phaser.Game(config);
+
+        let spaceship;
+        let spaceship2;
+
+        let cursors;
+        let asteroids;
+        let bullets;
+        let bullets2;
+        let score = 0;
+
+
+        const points = [
+            100, 0,  // Punkt 1 (x, y)
+            200, 200,  // Punkt 2 (x, y)
+            0, 200   // Punkt 3 (x, y)
+        ];
+
+
+
+        function preload() {
+            this.load.image('spaceship', '../assets/spaceship.png');
+            this.load.image('asteroid', '../assets/asteroid.png');
+            this.load.image('bullet', '../assets/bullet.png');
+        }
+
+        function create() {
+            this.scoretext = this.add.text(50, 50, 'WYNIK');
+
+            spaceship = this.physics.add.sprite(200, 100, 'spaceship').setScale(0.2, 0.2);
+            spaceship.setCollideWorldBounds(true);
+            // spaceship.setTint(0xff0000);
+
+
+            spaceship2 = this.physics.add.sprite(300, 100, 'spaceship').setScale(0.2, 0.2);
+            spaceship2.setCollideWorldBounds(true);
+            spaceship2.setTint(0xffffbb);
+            cursors = this.input.keyboard.createCursorKeys();
+            asteroids = this.physics.add.group();
+            bullets = this.physics.add.group();
+            bullets2 = this.physics.add.group();
+            createAsteroid();
+            spaceship.setBounce(0.8);
+            spaceship2.setBounce(0.8);
+            spaceship.life = 20;
+            spaceship2.life = 20;
+
+            spaceship2.setActive(false);
+
+            this.physics.world.disable(spaceship2);
+            spaceship2.visible = 0;
+
+            this.physics.add.collider(spaceship, asteroids, (spaceship, asteroid) => {
+                spaceshipAsteroid(spaceship, asteroid)
+
+            });
+            this.physics.add.collider(spaceship2, asteroids, (obj, asteroid) => {
+                spaceshipAsteroid(obj, asteroid)
+
+            });
+            this.physics.add.overlap(bullets, asteroids, (bullet, asteroid) => {
+                bulletAsteroid(bullet, asteroid)
+            });
+            this.physics.add.overlap(bullets2, asteroids, (bullet, asteroid) => {
+                bulletAsteroid(bullet, asteroid)
+            });
+
+            this.physics.add.collider(asteroids, asteroids);
+
+
+
+
+
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key.toUpperCase() === 'F') {
+                    shoot2();
+                    this.physics.world.enable(spaceship2);
+                    spaceship2.visible = 1;
+                }
+
+                if (event.key === '5' || event.key === ' ') {
+                    shoot();
+                }
+            })
+
+            setInterval(() => {
+                createAsteroid()
+            }, 10000)
+
+        }
+
+        function spaceshipAsteroid(obj, asteroid) {
+            obj.life -= 20;
+        }
+
+        function createAsteroid(x, y, scale, life, velx, vely) {
+            if (!x) {
+                x = 0;
+            }
+
+            if (!y) {
+                y = Math.random() * 600;
+            }
+            if (!scale) {
+                scale = 0.2;
+            }
+
+            if (!life) {
+                life = 100;
+            }
+            let asteroid = asteroids.create(x, y, 'asteroid');
+            asteroid.life = life;
+            asteroid.setScale(scale, scale);
+            // asteroid.setCollideWorldBounds(true);
+
+            if (life > 50) {
+                setTimeout(() => {
+                    asteroid.setCollideWorldBounds(true);
+
+                }, 1500)
+            } else {
+                    asteroid.setCollideWorldBounds(true);
+
+            }
+            // asteroid.setDrag(1000);
+
+            if (!velx) {
+                velx = 100;
+
+            }
+
+            if (!vely) {
+                vely = 100;
+            }
+
+            asteroid.setVelocityX(velx);
+            asteroid.setVelocityY(vely);
+
+            asteroid.setBounce(0.8);
+            asteroid.rotation = Math.random() * 6.14;
+
+
+        }
+
+        function bulletAsteroid(bullet, asteroid) {
+            bullet.destroy();
+
+            asteroid.life -= 10;
+
+            if (asteroid.life <= 0) {
+                if (asteroid.body.width > 60) {
+                    createAsteroid(asteroid.x + Math.random() * 50, asteroid.y + Math.random() * 50, 0.1, 50, Math.random() * 100, Math.random() * 100);
+                    createAsteroid(asteroid.x + Math.random() * 50, asteroid.y + Math.random() * 50, 0.1, 50, Math.random() * 100, Math.random() * 100);
+                    createAsteroid(asteroid.x + Math.random() * 50, asteroid.y + Math.random() * 50, 0.1, 50, Math.random() * 100, Math.random() * 100);
+
+                }
+                asteroid.destroy();
+                score += 10;
+            }
+
+            console.log(asteroid.life)
+
+
+
+        }
+
+        function update() {
+            this.scoretext.setText('SCORE:' + score);
+            if (spaceship.life <= 0) {
+                spaceship.setTint(0xff0000)
+                setTimeout(() => {
+                    spaceship.visible = 0;
+                    spaceship.x = 9999;
+                    spaceship.y = 9999;
+                    document.querySelector('#scoreform').style.display = 'block';
+
+                }, 500)
+            }
+
+            if (spaceship2.life <= 0) {
+                spaceship2.setTint(0xff0000)
+                setTimeout(() => {
+                    spaceship2.visible = 0;
+                    spaceship2.x = 9999;
+                    spaceship2.y = 9999;
+
+                }, 500)
+            }
+            let keyboard = this.input.keyboard;
+
+            if (cursors.up.isDown) {
+                spaceship.setVelocityX(spaceship.body.velocity.x + Math.sin(spaceship.rotation) * 5);
+                spaceship.setVelocityY(spaceship.body.velocity.y - Math.cos(spaceship.rotation) * 5);
+
+            }
+
+            if (cursors.left.isDown) {
+                spaceship.rotation -= 0.03
+            }
+
+            if (cursors.right.isDown) {
+                spaceship.rotation += 0.03
+            }
+
+            if (keyboard.addKey('W').isDown) {
+                spaceship2.setVelocityX(spaceship2.body.velocity.x + Math.sin(spaceship2.rotation) * 5);
+                spaceship2.setVelocityY(spaceship2.body.velocity.y - Math.cos(spaceship2.rotation) * 5);
+            }
+
+            if (keyboard.addKey('A').isDown) {
+                spaceship2.rotation -= 0.03
+            }
+
+            if (keyboard.addKey('D').isDown) {
+                spaceship2.rotation += 0.03
+            }
+
+        }
+
+        function shoot() {
+            let bullet = bullets.create(spaceship.x, spaceship.y, 'bullet').setScale(0.1, 0.1);
+            bullet.rotation = spaceship.rotation - Math.PI / 2;
+            bullet.setVelocityX(Math.cos(spaceship.rotation - Math.PI / 2) * 300);
+            bullet.setVelocityY(Math.sin(spaceship.rotation - Math.PI / 2) * 300);
+        }
+
+        function shoot2() {
+            let bullet = bullets.create(spaceship2.x, spaceship2.y, 'bullet').setScale(0.1, 0.1);
+            bullet.rotation = spaceship2.rotation - Math.PI / 2;
+            bullet.setVelocityX(Math.cos(spaceship2.rotation - Math.PI / 2) * 300);
+            bullet.setVelocityY(Math.sin(spaceship2.rotation - Math.PI / 2) * 300);
+        }
+
+        async function saveScore() {
+            await axios.post('/asteroids/api/addscore.php', { score: score, nickname: document.querySelector('#nicknameinput').value });
+
+            scoreform.style.display = 'none';
+            getScores();
+        }
+
+        async function getScores() {
+            await axios.get('/asteroids/api/read.php').then((res) => scores = res.data);
+            document.querySelector('#listScores').innerHTML = '';
+            for (let i = 0; i < scores.length; i++) {
+                let elem = scores[i];
+                document.querySelector('#listScores').innerHTML += `<p>${elem.nickname}:${elem.score}</p>`;
+            }
+        }
+
+        getScores();
+
+
+
+
+
+
+    </script>
+</body>
+
+</html>

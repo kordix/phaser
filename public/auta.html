@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auta</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+
+</head>
+
+<body>
+
+    <script>
+        let config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 },
+                    debug: false
+                }
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            }
+        }
+
+        let auto;
+        let yspeed = 0;
+        let xspeed = 0;
+        let speed = 0;
+
+        let acceleration = 2;
+
+        let cursors;
+
+
+        new Phaser.Game(config);
+
+
+        function preload() {
+            this.load.image('grass', './assets/grass.png');
+            this.load.image('auto', './assets/auto.png');
+
+        }
+
+        function create() {
+            this.add.tileSprite(0, 0, 800, 600, 'grass').setOrigin(0, 0);
+            this.speedtext = this.add.text(50,50,'SPPED');
+            auto = this.physics.add.sprite(200, 200, 'auto').setScale(0.3, 0.3);
+            auto.setCollideWorldBounds(true);
+            cursors = this.input.keyboard.createCursorKeys();
+            auto.setBounce(0.3);
+        }
+
+
+        function update() {
+
+            let rotationspeed = speed / 100;
+            if(rotationspeed > 100){
+                rotationspeed = 100;
+            }
+
+
+            auto.setVelocityY(speed * Math.cos(auto.rotation) * -1);
+            auto.setVelocityX(speed * Math.sin(auto.rotation));
+
+
+            if (cursors.up.isDown) {
+                // yspeed -= 2;
+                //  auto.setVelocityY(auto.body.velocity.y - acceleration);
+
+                speed += 3;
+            }
+
+            if (cursors.down.isDown) {
+                speed -= 3;
+
+
+            }
+
+
+            if (cursors.right.isDown) {
+                // auto.setVelocityX(auto.body.velocity.x + acceleration);
+
+                auto.rotation += 0.02 * speed / 150;
+
+            }
+
+
+            if (cursors.left.isDown) {
+                auto.rotation -= 0.02 * speed / 150;
+                // auto.setVelocityX(auto.body.velocity.x - acceleration);
+
+                // xspeed -= 2;
+
+            }
+
+            if (speed > 0) {
+                speed -= 1
+            }
+
+            this.speedtext.setText('Speed:'+Math.ceil(speed / 5))
+
+
+
+
+
+
+
+
+
+        }
+
+
+
+    </script>
+
+</body>
+
+</html>

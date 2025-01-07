@@ -12,7 +12,7 @@
 
 <body>
 
-    <p>Player1 - space lub 5 - strzał, N lub 4 - bieganie , M lub 6 - zatrzymanie</p>
+    <p>Player1 - 5 numpad - strzał, 4 numpad - bieganie , 6 numpad- zatrzymanie</p>
     <p>Player2 - F - strzał, E - bieganie , R - zatrzymanie</p>
 
     <canvas id="mycanvas"></canvas>
@@ -136,19 +136,29 @@
             this.leftbutton = this.add.image(90, 510, 'leftbutton').setScale(0.2, 0.2).setInteractive();
 
 
-            this.upbutton = this.add.image(190, 410, 'leftbutton').setScale(0.2, 0.2).setInteractive();;
+            this.upbutton = this.add.image(190, 410, 'leftbutton').setScale(0.2, 0.2).setInteractive();
             this.upbutton.rotation = Math.PI * 0.5;
 
 
-            this.downbutton = this.add.image(190, 510, 'leftbutton').setScale(0.2, 0.2).setInteractive();;
+            this.downbutton = this.add.image(190, 510, 'leftbutton').setScale(0.2, 0.2).setInteractive();
             this.downbutton.rotation = Math.PI * 1.5;
 
-            this.rightbutton = this.add.image(290, 510, 'leftbutton').setScale(0.2, 0.2).setInteractive();;
+            this.rightbutton = this.add.image(290, 510, 'leftbutton').setScale(0.2, 0.2).setInteractive();
             this.rightbutton.flipX = true;
 
             this.button4 = this.add.image(400, 510, '4button').setScale(0.2, 0.2).setInteractive();
             this.button5 = this.add.image(500, 510, '5button').setScale(0.2, 0.2).setInteractive();
             this.button6 = this.add.image(600, 510, '6button').setScale(0.2, 0.2).setInteractive();
+
+            this.leftbutton.visible = 0;
+            this.downbutton.visible = 0;
+            this.rightbutton.visible = 0;
+            this.upbutton.visible = 0;
+
+            this.button4.visible = 0;
+            this.button5.visible = 0;
+            this.button6.visible = 0;
+
 
 
 
@@ -293,6 +303,7 @@
             this.button6.on('pointerdown', () => {
                 stopper = 1;
                 self.button6.setTint(0xff0000);
+                player1.stopper = 1;
             })
 
             this.button4.on('pointerup', () => {
@@ -334,18 +345,18 @@
                 }
 
                 if (event.key == '5') {
-                    kick = 1;
+                    player1.kick = 1;
                 }
 
                 if (event.key == '6') {
-                    stopper = 1;
+                    player1.stopper = 1;
                 }
 
             }, this);
 
             this.input.keyboard.addListener('keydown_F', function (event) {
                 console.log('fsdaddsf');
-                kick = 1;
+                player2.kick = 1;
 
             }, this);
 
@@ -356,7 +367,7 @@
 
             this.input.keyboard.addListener('keydown_R', function (event) {
                 console.log('X');
-                stopper = 1;
+                player2.stopper = 1;
             }, this);
 
             this.input.keyboard.addListener('keydown_N', function (event) {
@@ -422,10 +433,10 @@
 
 
 
-            if (stopper) {
+            if (player.stopper) {
                 ball.body.velocity.y = ball.body.velocity.y / 10;
                 ball.body.velocity.x = ball.body.velocity.x / 10;
-            } else if (kick) {
+            } else if (player.kick) {
                 ball.body.velocity.y = ball.body.velocity.y * 5;
                 ball.body.velocity.x = ball.body.velocity.x * 5;
 
@@ -447,8 +458,8 @@
 
             console.log(angleInDegrees);
 
-            kick = 0;
-            stopper = 0;
+            player.kick = 0;
+            player.stopper = 0;
 
 
 
@@ -456,16 +467,29 @@
 
         function update() {
 
-            if (kick) {
+            if (player1.kick) {
                 player1.setTint(0x00ff00);
             }
 
-            if (stopper) {
+            if (player2.kick) {
+                player2.setTint(0x00ff00);
+            }
+
+            if (player1.stopper) {
                 player1.setTint(0xffff00);
             }
 
-            if (!kick && !stopper) {
+            if (player2.stopper) {
+                player2.setTint(0xffff00);
+            }
+
+            if (!player1.kick && !player1.stopper) {
                 player1.setTint(0xffffff);
+
+            }
+
+            if (!player2.kick && !player2.stopper) {
+                player2.setTint(0xffffff);
 
             }
 
@@ -674,6 +698,15 @@
 
             if (localStorage.bot === 'true') {
 
+                if (player2.x > 750) {
+                    // player2.setVelocityX(-10);
+                }
+
+                if (player2.x <= 750) {
+                    // player2.setVelocityX(0);
+
+                }
+                // player2.setDrag(500);
 
                 if (ball.y > player2.y) {
 
@@ -702,7 +735,7 @@
                     }, 1000);
                 }
 
-                if (player1.x > 750) {
+                if (player1.x > 700) {
                     player1.x = 400
                 }
 
