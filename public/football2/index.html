@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=0.5 , user-scalable=yes">
     <title>Piłkarzyki</title>
     <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
 
@@ -19,6 +19,10 @@
     <br>
     <label for="">Bot:</label>
     <input type="checkbox" onchange="handleBot()" id="botcheckbox">
+
+    <label for="">Mobile:</label>
+    <input type="checkbox" onchange="handleMobile()" id="mobilecheckbox">
+
 
 
 
@@ -36,6 +40,16 @@
                 localStorage.bot = 'false';
             } else {
                 localStorage.bot = 'true';
+            }
+
+            location.reload();
+        }
+
+        function handleMobile() {
+            if (localStorage.mobile === 'true') {
+                localStorage.mobile = 'false';
+            } else {
+                localStorage.mobile = 'true';
             }
 
             location.reload();
@@ -158,6 +172,17 @@
             this.button4.visible = 0;
             this.button5.visible = 0;
             this.button6.visible = 0;
+
+            if (localStorage.mobile) {
+                this.leftbutton.visible = 1;
+                this.downbutton.visible = 1;
+                this.rightbutton.visible = 1;
+                this.upbutton.visible = 1;
+
+                this.button4.visible = 1;
+                this.button5.visible = 1;
+                this.button6.visible = 1;
+            }
 
 
 
