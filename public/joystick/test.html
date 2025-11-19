@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <canvas id="c" width="200" height="200"></canvas>
+
+    <script>
+        const canvas = document.getElementById("c");
+        const ctx = canvas.getContext("2d");
+
+        // Punkt początkowy (A)
+        let x = 50;
+        let y = 50;
+
+        const targetX = 100;
+        const targetY = 100;
+
+
+        const speed = 200; 
+
+        let lastTime = 0;
+
+        function loop(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const delta = (timestamp - lastTime) / 1000; // czas w sekundach
+            lastTime = timestamp;
+            const dx = targetX - x;
+            const dy = targetY - y;
+            const distance = Math.hypot(dx, dy); 
+
+
+            if (distance > 0) {
+                const move = speed * delta;
+
+                if (move >= distance) {
+                    x = targetX;
+                    y = targetY;
+                } else {
+                    x += (dx / distance) * move;
+                    y += (dy / distance) * move;
+                }
+            }
+
+            // rysowanie
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "red";
+            ctx.fillRect(x - 15, y - 15, 30, 30); // kwadrat 30×30
+
+            // Kolejna klatka jeśli nie dotarliśmy
+            if (distance > 0) requestAnimationFrame(loop);
+        }
+
+        requestAnimationFrame(loop);
+
+
+    </script>
+</body>
+
+</html>

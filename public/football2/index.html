@@ -23,13 +23,46 @@
     <label for="">Mobile:</label>
     <input type="checkbox" onchange="handleMobile()" id="mobilecheckbox">
 
+    <br>
+
+    <br>
+
+    <p id="nx">Nx:</p>
+    <p id="ny">Ny:</p>>
+
+    <canvas id="joy1" style="border:1px solid black"></canvas>
 
 
+
+    <script src="joystick.js"></script>
+
+    <script>
+        let nxglobal = 0;
+        let nyglobal = 0;
+        const joy = new Joystick("joy1", {
+            size: 200,
+            knobRadius: 30,
+            onMove: (nx, ny, angle) => {
+                nxglobal = nx;
+                nyglobal = ny;
+                document.getElementById("nx").innerText = "Nx: " + nx.toFixed(2);
+                document.getElementById("ny").innerText = "Ny: " + ny.toFixed(2);
+
+
+
+
+            }
+        });
+    </script>
 
     <script>
 
         if (localStorage.bot === 'true') {
             document.querySelector('#botcheckbox').checked = true;
+        }
+
+        if (localStorage.mobile === 'true') {
+            document.querySelector('#mobilecheckbox').checked = true;
         }
 
         function handleBot() {
@@ -173,7 +206,7 @@
             this.button5.visible = 0;
             this.button6.visible = 0;
 
-            if (localStorage.mobile) {
+            if (localStorage.mobile === 'true') {
                 this.leftbutton.visible = 1;
                 this.downbutton.visible = 1;
                 this.rightbutton.visible = 1;
@@ -321,6 +354,7 @@
 
             this.button5.on('pointerdown', (pointer, gameobject) => {
                 kick = 1;
+                player1.kick = 1;
                 self.button5.setTint(0xff0000);
 
             })
@@ -605,12 +639,13 @@
 
             var keyboard = this.input.keyboard;
 
-            if (cursors.left.isDown || goesleft) {
+            console.log(nx);
+            if (cursors.left.isDown || goesleft || nxglobal < 0) {
                 player1.setVelocityX(-player1speed);
                 player1.anims.play('left', true);
 
             }
-            else if (cursors.right.isDown || goesright) {
+            else if (cursors.right.isDown || goesright || nxglobal > 0) {
                 player1.setVelocityX(player1speed);
                 player1.anims.play('right', true);
             }
@@ -637,11 +672,11 @@
 
 
 
-            if (cursors.up.isDown || goesup) {
+            if (cursors.up.isDown || goesup || nyglobal < 0) {
                 player1.setVelocityY(-player1speed);
             } else
 
-                if (cursors.down.isDown || goesdown) {
+                if (cursors.down.isDown || goesdown || nyglobal > 0) {
                     player1.setVelocityY(player1speed);
                 } else
 
@@ -688,7 +723,7 @@
                 player1.anims.play('right', true);
             }
 
-            if (!cursors.up.isDown && !cursors.left.isDown && !cursors.right.isDown && !cursors.down.isDown && !goesleft && !goesright && !goesdown && !goesup) {
+            if (!cursors.up.isDown && !cursors.left.isDown && !cursors.right.isDown && !cursors.down.isDown && !goesleft && !goesright && !goesdown && !goesup && !nxglobal) {
                 player1.anims.play('turn');
             }
 

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <p id="nx">Nx:</p>
+    <p id="ny"></p>
+
+    <canvas id="joystick" style="border:1px black solid"></canvas>
+
+    <script>
+        const joystick = document.getElementById("joystick");
+        const ctx = joystick.getContext("2d");
+
+        let canvassize = 200;
+
+        let isDown = false;
+        let isUp = false;
+
+        joystick.width = canvassize;
+        joystick.height = canvassize;
+
+        joystick.style.width = canvassize + 'px';
+        joystick.style.height = canvassize + 'px';
+
+        let xsaved = 50;
+        let ysaved = 50;
+
+        let x2 = 200;
+        let y2 = 200;
+
+        let nx = 0;
+        let ny = 0;
+
+        function drawBase() {
+            ctx.rect(0, 0, canvassize, canvassize);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+        }
+
+        drawBase();
+
+        function draw(x, y) {
+            if (x < 30) {
+                x = 30;
+            }
+            if (x > 170) {
+                x = 170;
+            }
+
+            if (y < 30) {
+                y = 30;
+            }
+
+            if (y > 170) {
+                y = 170;
+            }
+            drawBase();
+            ctx.beginPath();
+            ctx.arc(x, y, 30, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.fillStyle = 'gray';
+            ctx.fill();
+
+            const dx = xsaved - 100;
+            const dy = ysaved - 100;
+            const len = Math.hypot(dx, dy);
+            document.querySelector('#nx').innerHTML = nx;
+
+
+
+
+            xsaved = x;
+            ysaved = y;
+
+            nx = dx / len;
+            ny = dy / len;
+
+          
+
+        }
+
+        draw(100, 100);
+
+        joystick.addEventListener('click', function (e) {
+
+            // pozycja kliknięcia względem diva
+            const x = e.offsetX;
+            const y = e.offsetY;
+            xsaved = x;
+            ysaved = y;
+            draw(x, y)
+
+        });
+
+
+        joystick.addEventListener('pointerdown', function (e) {
+            const x = e.offsetX;
+            const y = e.offsetY;
+            draw(x, y)
+            isDown = true;
+
+            // alert((x + - 100) + ' ' + (y - 100));
+        })
+
+        document.addEventListener('pointerup', function (e) {
+            isUp = true;
+            isDown = false;
+            nx = 0;
+            ny = 0;
+            draw(100, 100);
+        })
+
+        joystick.addEventListener('pointermove', function (e) {
+            if (isDown) {
+                const x = e.offsetX;
+                const y = e.offsetY;
+                draw(x, y);
+            }
+        })
+
+    </script>
+</body>
+
+</html>

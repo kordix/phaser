@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <canvas id="joystick" style="border:1px black solid"></canvas>
+
+
+    <br>
+    <canvas id="canvas2" style="width:500px;height:500px;border:1px black solid"></canvas>
+
+    <script>
+        const canvas = document.getElementById("joystick");
+        const ctx = canvas.getContext("2d");
+
+        const canvas2 = document.getElementById("canvas2");
+        const ctx2 = canvas2.getContext("2d");
+
+
+
+
+        let canvassize = 200;
+
+        let isDown = false;
+        let isUp = false;
+
+        canvas.width = canvassize;
+        canvas.height = canvassize;
+
+        canvas.style.width = canvassize + 'px';
+        canvas.style.height = canvassize + 'px';
+
+        let xsaved = 50;
+        let ysaved = 50;
+
+        let x2 = 200;
+        let y2 = 200;
+
+        let nx = 0;
+        let ny = 0;
+
+
+        canvas2.width = 500;
+        canvas2.height = 500;
+
+        let ratio = 1;
+
+
+
+        function loop2() {
+            let speed = 0;
+
+            if (isDown) {
+                speed = 5;
+            }
+
+            console.log(nx,ny);
+
+
+
+            ctx2.rect(0, 0, 500, 500);
+            ctx2.fillStyle = 'white';
+            ctx2.fill();
+
+
+            ctx2.beginPath();
+            ctx2.arc(x2, y2, 30, 0, 2 * Math.PI);
+            ctx2.stroke();
+            ctx2.fillStyle = 'red';
+            ctx2.fill();
+
+
+            if (isDown) {
+                const dx = xsaved - 100;
+                const dy = ysaved - 100;
+
+                const len = Math.hypot(dx, dy);
+                if (len > 0) {
+                    nx = dx / len;
+                    ny = dy / len;
+
+                    let nox = false;
+                    let noy = false;
+                    if (x2 < 30 && xsaved < 100) {
+                        nox = true;
+                    }
+
+                    if (x2 > 470 && xsaved > 100) {
+                        nox = true;
+                    }
+
+                    if (y2 < 30 && ysaved < 100) {
+                        noy = true;
+                    }
+
+                    if (y2 > 470 && ysaved > 100) {
+                        noy = true;
+                    }
+
+
+                    if (!nox) {
+                        x2 += nx * speed;
+                    }
+
+                    if (!noy) {
+                        y2 += ny * speed;
+                    }
+                }
+            }
+
+
+            // console.log(ratio);
+
+
+
+
+            requestAnimationFrame(loop2);
+
+
+        }
+
+        requestAnimationFrame(loop2);
+
+
+        function drawBase() {
+
+            ctx.beginPath();
+            ctx.arc(canvassize / 2, canvassize / 2, 90, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.fillStyle = 'gray';
+            ctx.fill();
+
+            ctx.rect(0, 0, canvassize, canvassize);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+
+        }
+
+        drawBase();
+
+        function draw(x, y) {
+            if (x < 30) {
+                x = 30;
+            }
+
+          
+
+            if (x > 170) {
+                x = 170;
+            }
+
+            if (y < 30) {
+                y = 30;
+            }
+
+            if (y > 170) {
+                y = 170;
+            }
+
+
+            drawBase();
+            ctx.beginPath();
+            ctx.arc(x, y, 30, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.fillStyle = 'gray';
+            ctx.fill();
+
+
+
+
+            xsaved = x;
+            ysaved = y;
+
+        }
+
+        canvas.addEventListener('click', function (e) {
+
+            // pozycja kliknięcia względem diva
+            const x = e.offsetX;
+            const y = e.offsetY;
+            xsaved = x;
+            ysaved = y;
+            draw(x, y)
+
+        });
+
+
+        canvas.addEventListener('pointerdown', function (e) {
+            const x = e.offsetX;
+            const y = e.offsetY;
+            draw(x, y)
+            isDown = true;
+
+            // alert((x + - 100) + ' ' + (y - 100));
+
+            console.log(xsaved, ' ', ysaved);
+        })
+
+        document.addEventListener('pointerup', function (e) {
+            isUp = true;
+            isDown = false;
+
+            nx = 0;
+            ny = 0;
+
+            draw(100, 100);
+
+
+            requestAnimationFrame(loop);
+        })
+
+        canvas.addEventListener('pointermove', function (e) {
+            if (isDown) {
+                const x = e.offsetX;
+                const y = e.offsetY;
+                draw(x, y);
+            }
+        })
+
+        function center() {
+
+            let factor = 50;
+
+            setInterval(draw(xsaved + factor, ysaved + factor), 1000);
+        }
+
+        const targetX = 100;
+        const targetY = 100;
+
+
+        const speed = 50;
+
+        let lastTime = 0;
+
+        function loop(timestamp) {
+            if (isUp) {
+                if (!lastTime) lastTime = timestamp;
+                const delta = (timestamp - lastTime) / 1000; // czas w sekundach
+                lastTime = timestamp;
+                const dx = targetX - xsaved;
+                const dy = targetY - ysaved;
+                const distance = Math.hypot(dx, dy);
+
+
+
+
+                if (distance > 0) {
+                    const move = speed * delta;
+
+                    if (move >= distance) {
+                        // xsaved = targetX;
+                        // ysaved = targetY;
+                    } else {
+                        // xsaved += (dx / distance) * move;
+                        // ysaved += (dy / distance) * move;
+                    }
+                }
+
+
+                // rysowanie
+                draw(100, 100);
+
+                // Kolejna klatka jeśli nie dotarliśmy
+                if (distance > 0) {
+                    requestAnimationFrame(loop)
+
+                } else {
+                    isUp = false;
+                }
+            }
+        }
+
+
+
+
+    </script>
+</body>
+
+</html>
