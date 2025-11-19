@@ -22,20 +22,28 @@ class Joystick {
 
     addEvents() {
         this.canvas.addEventListener("pointerdown", e => {
-            this.isDown = true;
             this.move(e);
+            this.isDown = true;
         });
 
         document.addEventListener("pointerup", () => {
-            this.isDown = false;
+            if (this.isDown) {
+                this.isDown = false;
+                this.reset();
+            }
+        });
+
+        this.canvas.addEventListener("pointerup", () => {
             this.reset();
         });
+
+
 
         this.canvas.addEventListener("pointermove", e => {
             if (this.isDown) this.move(e);
         });
 
-        this.canvas.addEventListener("click", e => this.move(e));
+
     }
 
     move(e) {
@@ -57,6 +65,7 @@ class Joystick {
     }
 
     draw(x, y) {
+        // alert('rysuje')
         this.x = x;
         this.y = y;
         this.ctx.clearRect(0, 0, this.size, this.size);
