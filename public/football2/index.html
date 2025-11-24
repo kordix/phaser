@@ -193,7 +193,7 @@
 
             setTimeout(() => {
                 player1speed -= 30;
-            }, 4000);
+            }, 5000);
 
         }
 
@@ -364,12 +364,12 @@
 
             const interval = setInterval(() => {
 
-                if (player1stamina < 100) {
+                if (player1stamina < 50) {
                     player1stamina += 10
                     this.stamina1text.setText('Player1 stamina:' + player1stamina)
                 }
 
-                if (player2stamina < 100) {
+                if (player2stamina < 50) {
                     player2stamina += 10
                     this.stamina2text.setText('Player2 stamina:' + player2stamina)
                 }
