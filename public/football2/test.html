@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="pl">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Mobilne przyciski — podświetlenie / obramowanie</title>
+    <style>
+        :root {
+            --bg: #f7f7f8;
+            --btn-bg: #ffffff;
+            --accent: #0a84ff;
+            /* kolor obramowania */
+            --radius: 14px;
+            --touch-size: 56px;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .wrap {
+            width: 100%;
+            max-width: 420px;
+            display: grid;
+            gap: 16px;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .btn {
+            -webkit-tap-highlight-color: transparent;
+            /* usuwa domyślne "highlight" na Android */
+            appearance: none;
+            border: 0;
+            background: var(--btn-bg);
+            padding: 14px 12px;
+            border-radius: var(--radius);
+            font-size: 16px;
+            min-height: var(--touch-size);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 18px rgba(10, 10, 10, 0.06);
+            transition: transform 120ms ease, box-shadow 120ms ease, border-color 160ms ease, background 160ms ease;
+            touch-action: manipulation;
+            cursor: pointer;
+        }
+
+        /* wygląd podczas krótkiego przytrzymania (dotknięcia) */
+        .btn.pressed {
+            transform: translateY(1px) scale(0.996);
+            box-shadow: 0 3px 10px rgba(10, 10, 10, 0.08);
+        }
+
+        /* wygląd "aktywnego" (wciśniętego/wybranego) — obramowanie + jaśniejsze tło */
+        .btn.active {
+            outline: none;
+            border: 3px solid var(--accent);
+            background: linear-gradient(180deg, #f0f8ff, var(--btn-bg));
+        }
+
+        /* focus dla dostępności klawiatury */
+        .btn:focus {
+            box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.12), 0 6px 18px rgba(10, 10, 10, 0.06);
+        }
+
+        /* mały opis pod przyciskami */
+        .hint {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+        }
+
+        @media (max-width:420px) {
+            .wrap {
+                gap: 12px
+            }
+
+            .btn {
+                font-size: 15px;
+                padding: 12px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <button id="btn1" class="btn" aria-pressed="false">Przycisk 1</button>
+        <button id="btn2" class="btn" aria-pressed="false">Przycisk 2</button>
+
+        <div class="hint">Dotknij aby zaznaczyć — przytrzymaj aby zobaczyć efekt "pressed".</div>
+    </div>
+
+    <script>
+        // Uniwersalna obsługa pointer events (działa na dotyk, mysz i pióro)
+        const buttons = document.querySelectorAll('.btn');
+
+        buttons.forEach(btn => {
+            // krótkie przyciśnięcie wizualne (pressed) — dodaj/usuń klasę przy pointerdown/pointerup
+            btn.addEventListener('pointerdown', (e) => {
+                // tylko lewy przycisk myszy / dowolny dotyk
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+                btn.classList.add('pressed');
+            });
+
+            // usuń efekt pressed kiedy palec/kliknięcie zostanie puszczone lub anulowane
+            const removePressed = () => btn.classList.remove('pressed');
+            btn.addEventListener('pointerup', removePressed);
+            btn.addEventListener('pointercancel', removePressed);
+            btn.addEventListener('pointerleave', removePressed);
+
+            // kliknięcie przełącza stan aktywny (persistujący) — aria-pressed też aktualizujemy
+            btn.addEventListener('click', () => {
+                const isActive = btn.classList.toggle('active');
+                btn.setAttribute('aria-pressed', String(!!isActive));
+            });
+
+            // usprawnienie dla klawiatury: spacja / enter zachowują się naturalnie dzięki <button>
+        });
+
+        // (opcjonalne) — jeśli chcesz, żeby tylko jeden przycisk mógł być aktywny naraz,
+        // odkomentuj poniższy blok i usuń komentarz.
+        /*
+        buttons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+          });
+        });
+        */
+    </script>
+</body>
+
+</html>
