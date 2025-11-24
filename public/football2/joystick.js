@@ -26,7 +26,7 @@ class Joystick {
             this.isDown = true;
         });
 
-        document.addEventListener("pointerup", () => {
+        this.canvas.addEventListener("pointerup", () => {
             if (this.isDown) {
                 this.isDown = false;
                 this.reset();
