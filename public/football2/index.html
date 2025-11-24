@@ -28,9 +28,18 @@
     <br>
 
     <p id="nx">Nx:</p>
-    <p id="ny">Ny:</p>>
+    <p id="ny">Ny:</p>
 
-    <canvas id="joy1" style="border:1px solid black"></canvas>
+
+    <div style="display:flex;align-items:center">
+        <canvas id="joy1" style="border:1px solid black"></canvas>
+        <button onClick="run()" style="width:100px;height:100px;margin:20px">4</button>
+        <button onClick="kickf()" style="width:100px;height:100px;margin:20px">5</button>
+        <button onClick="stop()" style="width:100px;height:100px;margin:20px">6</button>
+
+
+
+    </div>
 
 
 
@@ -140,6 +149,8 @@
         let goesright = false;
         let goesdown = false;
 
+        let stamina1text = null;
+
 
 
 
@@ -154,12 +165,35 @@
             this.load.image('platform', '../assets/platformwhite.png');
             this.load.image('platform2', '../assets/platformwhite2.png');
             this.load.image('leftbutton', '../assets/leftbutton.png')
-            this.load.image('4button', '../assets/4button.png');
-            this.load.image('5button', '../assets/5button.png');
-            this.load.image('6button', '../assets/6button.png');
+        }
+
+        function run() {
+
+            if (player1stamina <= 0) {
+                player1.setTint(0xff0000);
+                setTimeout(() => {
+                    player1.setTint(0xffffff);
+                }, 200);
+                return;
+            }
+            player1speed += 30;
+            player1stamina -= 10;
+
+            stamina1text.setText('Player1 stamina:' + player1stamina);
 
 
+            setTimeout(() => {
+                player1speed -= 30;
+            }, 2000);
 
+        }
+
+        function kickf() {
+            player1.kick = true;
+        }
+
+        function stop() {
+            player1.stopper = 1;
 
         }
 
@@ -178,77 +212,8 @@
 
             this.velocitytext = this.add.text(400, 40, 'Ball velocity', { fill: '#ffff00' });
             this.stamina1text = this.add.text(100, 70, 'Player1 stamina:' + player1stamina, { fill: '#999999' });
+            stamina1text = this.stamina1text;
             this.stamina2text = this.add.text(100, 100, 'Player2 stamina:' + player2stamina, { fill: '#999999' });
-
-            this.leftbutton = this.add.image(90, 510, 'leftbutton').setScale(0.2, 0.2).setInteractive();
-
-
-            this.upbutton = this.add.image(190, 410, 'leftbutton').setScale(0.2, 0.2).setInteractive();
-            this.upbutton.rotation = Math.PI * 0.5;
-
-
-            this.downbutton = this.add.image(190, 510, 'leftbutton').setScale(0.2, 0.2).setInteractive();
-            this.downbutton.rotation = Math.PI * 1.5;
-
-            this.rightbutton = this.add.image(290, 510, 'leftbutton').setScale(0.2, 0.2).setInteractive();
-            this.rightbutton.flipX = true;
-
-            this.button4 = this.add.image(400, 510, '4button').setScale(0.2, 0.2).setInteractive();
-            this.button5 = this.add.image(500, 510, '5button').setScale(0.2, 0.2).setInteractive();
-            this.button6 = this.add.image(600, 510, '6button').setScale(0.2, 0.2).setInteractive();
-
-            this.leftbutton.visible = 0;
-            this.downbutton.visible = 0;
-            this.rightbutton.visible = 0;
-            this.upbutton.visible = 0;
-
-            this.button4.visible = 0;
-            this.button5.visible = 0;
-            this.button6.visible = 0;
-
-            if (localStorage.mobile === 'true') {
-                this.leftbutton.visible = 1;
-                this.downbutton.visible = 1;
-                this.rightbutton.visible = 1;
-                this.upbutton.visible = 1;
-
-                this.button4.visible = 1;
-                this.button5.visible = 1;
-                this.button6.visible = 1;
-            }
-
-
-
-
-            this.leftbutton.on('pointerdown', () => {
-                goesleft = true;
-            });
-
-            this.rightbutton.on('pointerdown', () => {
-                goesright = true;
-            });
-
-            this.upbutton.on('pointerdown', () => {
-                goesup = true;
-            });
-
-            this.downbutton.on('pointerdown', () => {
-                goesdown = true;
-            });
-
-            this.input.on('pointerup', () => {
-                goesleft = false;
-                goesright = false;
-                goesup = false;
-                goesdown = false;
-            })
-
-
-
-
-
-
-
 
 
             ball = this.physics.add.sprite(400, 300, 'ball').setScale(0.04);
@@ -264,15 +229,9 @@
             platforms.create(800, 500, 'platform2');
             platforms.create(800, 100, 'platform2');
             platforms.create(0, 15, 'platform').setScale(5, 1).refreshBody();
-
             platforms.create(0, 585, 'platform').setScale(5, 1).refreshBody();
 
-
-
-
-
             player1 = this.physics.add.sprite(100, 450, 'dude');
-
             player2 = this.physics.add.sprite(700, 450, 'dude2');
             player2.setAlpha(0.9);
 
@@ -286,15 +245,6 @@
             this.physics.add.collider(platforms, player1);
             this.physics.add.collider(platforms, player2);
 
-
-
-            // Get the current color of the object in RGB format
-            // Get the current color of the object in RGB format
-
-
-
-
-
             ball.body.setCircle(ball.width / 2)
 
             createAnimations(this);
@@ -302,7 +252,6 @@
             ball.setBounce(1.1);
             ball.body.setMaxVelocity(700, 700);
             // ball.body.setFriction(100,100)
-
 
             let ballcollider = this.physics.add.collider(player1, ball, littleKick);
             let ballcollider2 = this.physics.add.collider(player2, ball, littleKick);
@@ -331,84 +280,21 @@
             })
 
 
-            this.button4.on('pointerdown', () => {
-                self.button4.setTint(0xff0000);
-
-                if (player1stamina <= 0) {
-                    player1.setTint(0xff0000);
-                    setTimeout(() => {
-                        player1.setTint(0xffffff);
-                    }, 200);
-                    return;
-                }
-                player1speed += 30;
-                player1stamina -= 10;
-
-                this.stamina1text.setText('Player1 stamina:' + player1stamina);
-
-
-                setTimeout(() => {
-                    player1speed -= 30;
-                }, 2000);
-            })
-
-            this.button5.on('pointerdown', (pointer, gameobject) => {
-                kick = 1;
-                player1.kick = 1;
-                self.button5.setTint(0xff0000);
-
-            })
-
-            this.button6.on('pointerdown', () => {
-                stopper = 1;
-                self.button6.setTint(0xff0000);
-                player1.stopper = 1;
-            })
-
-            this.button4.on('pointerup', () => {
-                self.button4.setTint(0xffffff);
-            })
-
-            this.button5.on('pointerup', () => {
-                self.button5.setTint(0xffffff);
-            })
-
-
-
-            this.button6.on('pointerup', () => {
-                self.button6.setTint(0xffffff);
-            })
 
 
 
             this.input.keyboard.on('keydown', function (event) {
 
                 if (event.key == '4') {
-                    if (player1stamina <= 0) {
-                        player1.setTint(0xff0000);
-                        setTimeout(() => {
-                            player1.setTint(0xffffff);
-                        }, 200);
-                        return;
-                    }
-                    player1speed += 30;
-                    player1stamina -= 10;
-
-                    this.stamina1text.setText('Player1 stamina:' + player1stamina);
-
-
-                    setTimeout(() => {
-                        player1speed -= 30;
-                    }, 2000);
-
+                    run();
                 }
 
                 if (event.key == '5') {
-                    player1.kick = 1;
+                    kickf();
                 }
 
                 if (event.key == '6') {
-                    player1.stopper = 1;
+                    stop();
                 }
 
             }, this);
@@ -551,37 +437,6 @@
                 player2.setTint(0xffffff);
 
             }
-
-
-            if (goesleft) {
-                this.leftbutton.setTint(0xff0000);
-            } else {
-                this.leftbutton.setTint(0xffffff);
-
-            }
-
-            if (goesright) {
-                this.rightbutton.setTint(0xff0000);
-            } else {
-                this.rightbutton.setTint(0xffffff);
-
-            }
-
-            if (goesup) {
-                this.upbutton.setTint(0xff0000);
-            } else {
-                this.upbutton.setTint(0xffffff);
-
-            }
-
-            if (goesdown) {
-                this.downbutton.setTint(0xff0000);
-            } else {
-                this.downbutton.setTint(0xffffff);
-
-            }
-
-
 
             this.velocitytext.setText('x:' + ball.body.x);
 
