@@ -27,8 +27,8 @@
 
     <br>
 
-    <p id="nx">Nx:</p>
-    <p id="ny">Ny:</p>
+    <p id="nx" style="font-size:8px">Nx:</p>
+    <p id="ny" style="font-size:8px">Ny:</p>
 
 
     <div style="display:flex;align-items:center">
@@ -49,7 +49,7 @@
         let nxglobal = 0;
         let nyglobal = 0;
         const joy = new Joystick("joy1", {
-            size: 300,
+            size: 350,
             knobRadius: 40,
             onMove: (nx, ny, angle) => {
                 nxglobal = nx;
