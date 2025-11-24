@@ -33,13 +33,18 @@
 
     <div style="display:flex;align-items:center">
         <canvas id="joy1" style="border:1px solid black"></canvas>
-        <button onClick="run()" style="width:100px;height:100px;margin:20px">4</button>
+        <button onClick="run()" style="width:100px;height:100px;margin:20px;margin-left:100px;">4</button>
         <button onClick="kickf()" style="width:100px;height:100px;margin:20px">5</button>
         <button onClick="stop()" style="width:100px;height:100px;margin:20px">6</button>
 
 
 
     </div>
+
+
+    <br><br>
+
+    <button onClick="restart()">restart</button>
 
 
 
@@ -65,6 +70,10 @@
     </script>
 
     <script>
+
+        function restart(){
+            location.reload();
+        }
 
         if (localStorage.bot === 'true') {
             document.querySelector('#botcheckbox').checked = true;
@@ -141,8 +150,8 @@
 
         let friction = 0;
 
-        let player1stamina = 100;
-        let player2stamina = 100;
+        let player1stamina = 50;
+        let player2stamina = 50;
 
         let goesleft = false;
         let goesup = false;
@@ -184,7 +193,7 @@
 
             setTimeout(() => {
                 player1speed -= 30;
-            }, 2000);
+            }, 4000);
 
         }
 
