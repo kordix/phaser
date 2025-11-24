@@ -639,18 +639,19 @@
 
             var keyboard = this.input.keyboard;
 
-            console.log(nx);
-            if (cursors.left.isDown || goesleft || nxglobal < 0) {
+            if (cursors.left.isDown || goesleft) {
                 player1.setVelocityX(-player1speed);
                 player1.anims.play('left', true);
 
             }
-            else if (cursors.right.isDown || goesright || nxglobal > 0) {
+            else if (cursors.right.isDown || goesright) {
                 player1.setVelocityX(player1speed);
                 player1.anims.play('right', true);
             }
             else {
-                player1.setVelocityX(0);
+                if (!nxglobal) {
+                    player1.setVelocityX(0);
+                }
             }
 
             if (localStorage.bot !== 'true') {
@@ -686,9 +687,27 @@
                     } else
 
                         if (cursors.down.isUp) {
-                            player1.setVelocityY(0);
+                            if (!nyglobal) {
+                                player1.setVelocityY(0);
+                            }
 
                         }
+
+            if (nxglobal) {
+                player1.setVelocityX(nxglobal * player1speed);
+            }
+
+            if (nyglobal) {
+                player1.setVelocityY(nyglobal * player1speed);
+            }
+
+            if (nxglobal > 0) {
+                player1.anims.play('right', true);
+            }
+
+            if (nxglobal < 0) {
+                player1.anims.play('left', true);
+            }
 
 
             if (localStorage.bot !== 'true') {

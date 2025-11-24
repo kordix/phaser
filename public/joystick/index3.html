@@ -71,7 +71,9 @@
                 const dy = (y - this.size / 2) / (this.size / 2 - this.knobRadius);
 
                 const angle = Math.atan2(dy, dx);
-                this.onMove(dx, dy,angle);
+                let moveX = Math.cos(angle);
+                let moveY = Math.sin(angle);
+                this.onMove(moveX, moveY, angle);
             }
 
             draw(x, y) {
@@ -101,7 +103,7 @@
         const joy = new Joystick("joy1", {
             size: 200,
             knobRadius: 30,
-            onMove: (nx, ny,angle) => {
+            onMove: (nx, ny, angle) => {
                 document.getElementById("nx").innerText = "Nx: " + nx.toFixed(2);
                 document.getElementById("ny").innerText = "Ny: " + ny.toFixed(2);
                 document.getElementById("angle").innerText = "Radiany: " + angle.toFixed(2);

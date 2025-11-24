@@ -60,8 +60,23 @@ class Joystick {
         const dx = (x - this.size / 2) / (this.size / 2 - this.knobRadius);
         const dy = (y - this.size / 2) / (this.size / 2 - this.knobRadius);
 
+        const len = Math.sqrt(dx * dx + dy * dy);
+        let nx = dx;
+        let ny = dy;
+
         const angle = Math.atan2(dy, dx);
-        this.onMove(dx, dy);
+
+        let moveX = Math.cos(angle);
+        let moveY = Math.sin(angle);
+
+
+
+        if (len > 1) {
+            nx /= len;
+            ny /= len;
+        }
+
+        this.onMove(moveX, moveY);
     }
 
     draw(x, y) {
