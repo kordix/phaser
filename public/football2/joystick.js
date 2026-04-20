@@ -15,6 +15,11 @@ class Joystick {
         this.x = this.size / 2;
         this.y = this.size / 2;
         this.isDown = false;
+        this.activePointerId = null;
+
+        // Disable touch gestures on the joystick surface so the active finger
+        // keeps control even while other touches happen elsewhere.
+        this.canvas.style.touchAction = "none";
 
         this.draw(this.x, this.y);
         this.addEvents();
@@ -22,28 +27,46 @@ class Joystick {
 
     addEvents() {
         this.canvas.addEventListener("pointerdown", e => {
-            this.move(e);
+            if (this.activePointerId !== null) {
+                return;
+            }
+
+            this.activePointerId = e.pointerId;
             this.isDown = true;
+            this.canvas.setPointerCapture(e.pointerId);
+            this.move(e);
         });
 
-        this.canvas.addEventListener("pointerup", () => {
-            if (this.isDown) {
-                this.isDown = false;
-                this.reset();
+        this.canvas.addEventListener("pointermove", e => {
+            if (this.isDown && e.pointerId === this.activePointerId) {
+                this.move(e);
             }
         });
 
-        this.canvas.addEventListener("pointerup", () => {
+        this.canvas.addEventListener("pointerup", e => {
+            this.releasePointer(e);
+        });
+
+        this.canvas.addEventListener("pointercancel", e => {
+            this.releasePointer(e);
+        });
+    }
+
+    releasePointer(e) {
+        if (e.pointerId !== this.activePointerId) {
+            return;
+        }
+
+        if (this.canvas.hasPointerCapture(e.pointerId)) {
+            this.canvas.releasePointerCapture(e.pointerId);
+        }
+
+        this.activePointerId = null;
+
+        if (this.isDown) {
+            this.isDown = false;
             this.reset();
-        });
-
-
-
-        this.canvas.addEventListener("pointermove", e => {
-            if (this.isDown) this.move(e);
-        });
-
-
+        }
     }
 
     move(e) {
