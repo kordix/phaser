@@ -33,9 +33,9 @@
 
     <div style="display:flex;align-items:center">
         <canvas id="joy1" style="border:1px solid black"></canvas>
-        <button onClick="run()" style="width:100px;height:100px;margin:20px;margin-left:100px;">4</button>
-        <button onClick="kickf()" style="width:100px;height:100px;margin:20px">5</button>
-        <button onClick="stop()" style="width:100px;height:100px;margin:20px">6</button>
+        <button onpointerdown="event.preventDefault(); run()" style="width:100px;height:100px;margin:20px;margin-left:100px;touch-action:manipulation;">4</button>
+        <button onpointerdown="event.preventDefault(); kickf()" style="width:100px;height:100px;margin:20px;touch-action:manipulation;">5</button>
+        <button onpointerdown="event.preventDefault(); stop()" style="width:100px;height:100px;margin:20px;touch-action:manipulation;">6</button>
 
 
 
@@ -44,7 +44,7 @@
 
     <br><br>
 
-    <button onClick="restart()" style="width:50px;height:50px">🔄 restart</button>
+    <button onpointerdown="event.preventDefault(); restart()" style="width:50px;height:50px;touch-action:manipulation">🔄 restart</button>
 
 
 
